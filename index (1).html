@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#083F3C" />
+  <title>DocFlow AI — Gestão de POPs</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       DocFlow AI — estilos
+       Identidade clínica: verde de saúde pública, tipografia técnica.
+    ============================================================ */
+    :root{
+      --bg:#F2F5F4; --panel:#FFFFFF; --ink:#0F2A2E; --ink-soft:#456A6E;
+      --line:#DCE6E4; --brand:#0B5E5A; --brand-deep:#083F3C; --brand-soft:#E4F0EE;
+      --amber:#B5701A; --amber-soft:#FBEEDA; --green:#2E7D4F; --green-soft:#E2F1E7;
+      --red:#B3402F; --red-soft:#F6E4E0;
+      --sans:'IBM Plex Sans',system-ui,sans-serif;
+      --mono:'IBM Plex Mono',ui-monospace,monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+    button{font-family:inherit;cursor:pointer}
+    input{font-family:inherit}
+    a{color:var(--brand);text-decoration:none}
+    .hidden{display:none !important}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin{animation:spin 1s linear infinite}
+
+    /* ---- Login ---- */
+    .login-wrap{min-height:100vh;display:flex}
+    .login-brand{flex:1;background:var(--brand-deep);padding:48px 44px;display:flex;
+      flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+    .login-brand h1{color:#fff;font-size:32px;font-weight:700;line-height:1.2;margin-bottom:16px;max-width:420px}
+    .login-brand p{color:#B6D8D3;font-size:15px;line-height:1.6;max-width:420px}
+    .brand-logo{display:flex;align-items:center;gap:12px}
+    .brand-logo .mark{width:38px;height:38px;border-radius:10px;background:#0E7A73;display:grid;place-items:center}
+    .brand-logo .name{color:#fff;font-size:19px;font-weight:700;line-height:1}
+    .brand-logo .name span{color:#6FC7BC}
+    .brand-logo .sub{font-family:var(--mono);font-size:9px;color:#5E8A85;letter-spacing:.12em;margin-top:4px}
+    .brand-foot{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:#5E8A85}
+    .circle{position:absolute;border-radius:999px;border:1px solid rgba(255,255,255,.05)}
+
+    .login-form-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px}
+    .login-card{width:100%;max-width:380px}
+    .logo-mobile{display:none;align-items:center;gap:10px;margin-bottom:28px}
+    .logo-mobile .mark{width:32px;height:32px;border-radius:8px;background:var(--brand);display:grid;place-items:center}
+    .logo-mobile .name{font-size:17px;font-weight:700}
+    .logo-mobile .name span{color:var(--brand)}
+    .login-card h2{font-size:24px;font-weight:700;margin-bottom:6px}
+    .login-card .lead{font-size:14px;color:var(--ink-soft);margin-bottom:28px}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;
+      font-size:14px;font-weight:600;padding:12px 16px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+    .btn-primary{background:var(--brand);color:#fff;border:none;font-size:15px;padding:13px 16px}
+    .btn-block{width:100%}
+    .btn:disabled{opacity:.65;cursor:default}
+
+    .divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+    .divider .ln{flex:1;height:1px;background:var(--line)}
+    .divider span{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+
+    label.field{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+    .input-wrap{position:relative;margin-bottom:14px}
+    .input-wrap svg{position:absolute;left:12px;top:12px;color:var(--ink-soft);pointer-events:none}
+    .input-wrap input{width:100%;padding:11px 12px 11px 38px;border-radius:10px;border:1px solid var(--line);
+      font-size:14px;color:var(--ink);background:var(--panel);transition:border-color .15s,box-shadow .15s}
+    .input-wrap input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+    .err{background:var(--red-soft);color:var(--red);font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:16px}
+    .demo-box{margin-top:24px;padding:12px 14px;border-radius:8px;background:var(--brand-soft);
+      font-family:var(--mono);font-size:11px;color:var(--brand-deep);line-height:1.6}
+
+    /* ---- App shell ---- */
+    .app{min-height:100vh;display:flex;flex-direction:column}
+    .topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--brand-deep)}
+    .topbar .mark{width:30px;height:30px;border-radius:8px;background:#0E7A73;display:grid;place-items:center}
+    .topbar .name{color:#fff;font-size:16px;font-weight:700}
+    .topbar .name span{color:#6FC7BC}
+    .topbar .estab{margin-left:auto;font-family:var(--mono);font-size:11px;color:#8FD4C9;text-align:right}
+    .btn-logout{background:transparent;border:1px solid rgba(255,255,255,.2);color:#DCEEEB;border-radius:8px;
+      padding:7px 12px;font-size:13px;display:flex;align-items:center;gap:6px;margin-left:16px}
+
+    .body{flex:1;display:flex}
+
+    /* sidebar (desktop) */
+    .sidebar{width:230px;background:var(--brand-deep);padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+    .nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:10px 13px;border-radius:8px;border:none;
+      background:transparent;color:#CBDAD7;font-size:14px;font-weight:500;text-align:left}
+    .nav-item.active{background:var(--brand-soft);color:var(--brand-deep);font-weight:600}
+    .nav-item .badge{margin-left:auto;background:var(--amber);color:#fff;font-family:var(--mono);font-size:10px;
+      font-weight:700;padding:1px 6px;border-radius:99px}
+    .sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+    .user-chip{display:flex;align-items:center;gap:10px;padding:10px 13px}
+    .user-chip .av{width:30px;height:30px;border-radius:99px;background:#0E7A73;display:grid;place-items:center;
+      color:#fff;font-family:var(--mono);font-size:12px;font-weight:700}
+    .user-chip .nm{font-size:12px;font-weight:600;color:#fff}
+    .user-chip .rl{font-family:var(--mono);font-size:10px;color:#5E8A85}
+
+    .content{flex:1;max-width:960px;margin:0 auto;width:100%;padding:28px 32px}
+
+    /* bottom tab bar (mobile) */
+    .tabbar{display:none;border-top:1px solid var(--line);background:var(--panel)}
+    .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 6px;border:none;
+      background:none;color:var(--ink-soft);position:relative}
+    .tab.active{color:var(--brand)}
+    .tab .lbl{font-size:10px;font-weight:600}
+    .tab .dot{position:absolute;top:6px;right:calc(50% - 14px);width:7px;height:7px;border-radius:99px;
+      background:var(--amber);border:1.5px solid var(--panel)}
+
+    /* ---- Biblioteca ---- */
+    .page-head{margin-bottom:22px}
+    .page-head .eyebrow{font-family:var(--mono);font-size:12px;color:var(--ink-soft);letter-spacing:.08em;
+      text-transform:uppercase}
+    .page-head h1{font-size:26px;font-weight:700;margin-top:6px}
+    .toolbar{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+    .search{position:relative;flex:1;min-width:200px}
+    .search svg{position:absolute;left:11px;top:11px;color:var(--ink-soft)}
+    .search input{width:100%;padding:10px 12px 10px 34px;border-radius:9px;border:1px solid var(--line);
+      font-size:14px;color:var(--ink);background:var(--panel)}
+    .search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+    .pop-list{display:grid;gap:10px}
+    .pop-card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;background:var(--panel);
+      border:1px solid var(--line);border-radius:11px;padding:15px 17px;text-align:left;border-left-width:1px;width:100%}
+    .pop-card.alerta{border-left:3px solid var(--amber)}
+    .pop-card .meta-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+    .pop-card .pid{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+    .pop-card .nome{font-size:16px;font-weight:600}
+    .pop-card .meta-bot{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap}
+    .pop-card .sub{font-size:13px;color:var(--ink-soft)}
+    .pop-card .leram{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+    .pop-card .leram.full{color:var(--green)}
+    .chev{color:var(--ink-soft)}
+
+    .badge-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;
+      letter-spacing:.02em;text-transform:uppercase;padding:3px 8px;border-radius:4px;font-weight:600}
+    .b-vigente{background:var(--green-soft);color:var(--green)}
+    .b-revisar{background:var(--amber-soft);color:var(--amber)}
+    .b-rascunho{background:#EEF1F0;color:var(--ink-soft)}
+    .b-aprovacao{background:#EAF0FA;color:#3A6FB0}
+    .b-alto{background:var(--red-soft);color:var(--red)}
+    .b-medio{background:var(--amber-soft);color:var(--amber)}
+
+    .welcome{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px}
+    .welcome h1{font-size:22px;margin-bottom:8px}
+    .welcome p{font-size:15px;color:var(--ink-soft);line-height:1.6;margin-bottom:20px}
+    .note{font-family:var(--mono);font-size:12px;color:var(--brand);background:var(--brand-soft);
+      border-radius:8px;padding:12px 14px;line-height:1.6}
+
+    /* ---- POP detalhe ---- */
+    .back-link{background:none;border:none;color:var(--ink-soft);font-size:13px;padding:0;margin-bottom:16px;font-weight:500}
+    .faixa{display:flex;align-items:center;gap:10px;border-radius:10px;padding:12px 15px;margin-bottom:16px;flex-wrap:wrap}
+    .faixa.pend{background:var(--amber-soft)}
+    .faixa.ok{background:var(--green-soft)}
+    .faixa .txt{flex:1;font-size:13px;min-width:140px}
+    .btn-amber{background:var(--amber);color:#fff;border:none;border-radius:6px;padding:7px 13px;font-size:12px;font-weight:600}
+    .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+    .tab-btn{display:flex;align-items:center;gap:7px;background:none;border:none;border-bottom:2px solid transparent;
+      color:var(--ink-soft);font-size:14px;font-weight:600;padding:8px 13px;margin-bottom:-1px}
+    .tab-btn.active{border-bottom-color:var(--brand);color:var(--brand)}
+    .doc-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px}
+    .doc-sec{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    .doc-card p{font-size:14px;line-height:1.7;margin-bottom:16px}
+    .doc-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+    /* leitura */
+    .stat-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .stat{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px 17px}
+    .stat .num{font-family:var(--mono);font-size:28px;font-weight:700}
+    .stat .num small{font-size:15px;color:var(--ink-soft)}
+    .stat .lbl{font-size:13px;color:var(--ink-soft);margin-top:2px}
+    .sec-label{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+    .read-list{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:22px}
+    .read-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-top:1px solid var(--line)}
+    .read-item:first-child{border-top:none}
+    .read-item .av{width:34px;height:34px;border-radius:99px;background:var(--brand);display:grid;place-items:center;
+      color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;flex-shrink:0}
+    .read-item .who{flex:1}
+    .read-item .who .n{font-size:14px;font-weight:600}
+    .read-item .who .c{font-size:12px;color:var(--ink-soft)}
+    .read-item .when{text-align:right;font-family:var(--mono);font-size:12px}
+    .read-item .when .v{color:var(--green);font-size:11px;margin-top:2px}
+    .pend-chips{display:flex;gap:10px;flex-wrap:wrap}
+    .pend-chip{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px dashed rgba(181,112,26,.4);
+      border-radius:10px;padding:9px 13px}
+    .pend-chip .av{width:30px;height:30px;border-radius:99px;background:var(--amber-soft);display:grid;place-items:center;
+      color:var(--amber);font-family:var(--mono);font-size:11px;font-weight:700}
+    .pend-chip .n{font-size:13px;font-weight:600}
+    .pend-chip .c{font-size:11px;color:var(--ink-soft)}
+
+    /* ---- Equipe ---- */
+    .team-list{display:grid;gap:10px}
+    .team-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;background:var(--panel);
+      border:1px solid var(--line);border-radius:11px;padding:14px 17px}
+    .team-card.inativo{opacity:.6}
+    .team-card .av{width:40px;height:40px;border-radius:99px;background:var(--brand);display:grid;place-items:center;
+      color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;flex-shrink:0}
+    .team-card .nome{font-size:15px;font-weight:600}
+    .team-card .sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+    .team-card .acts{display:flex;gap:6px}
+    .icon-btn{background:none;border:1px solid var(--line);border-radius:8px;padding:7px;color:var(--ink-soft);
+      display:grid;place-items:center}
+    .role-tag{display:inline-block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.03em;
+      padding:2px 7px;border-radius:4px;font-weight:600}
+    .role-rt{background:var(--brand-soft);color:var(--brand)}
+    .role-editor{background:#EAF0FA;color:#3A6FB0}
+    .role-leitor{background:#EEF1F0;color:var(--ink-soft)}
+    .team-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+
+    /* modal / formulário */
+    .modal-bg{position:fixed;inset:0;background:rgba(8,42,46,.45);display:flex;align-items:flex-start;
+      justify-content:center;padding:24px 16px;overflow:auto;z-index:50}
+    .modal{background:var(--panel);border-radius:16px;width:100%;max-width:520px;padding:26px;margin-top:20px}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .modal-head h2{font-size:20px;font-weight:700}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .form-grid .full{grid-column:1/-1}
+    .fld label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+    .fld input,.fld select{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+      font-size:14px;color:var(--ink);background:var(--panel)}
+    .fld input:focus,.fld select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+    .fld .hint{font-size:11px;color:var(--ink-soft);margin-top:4px}
+    .req{color:var(--red)}
+    .modal-actions{display:flex;gap:10px;margin-top:22px}
+    .role-help{background:var(--brand-soft);border-radius:8px;padding:12px 14px;font-size:12px;
+      color:var(--brand-deep);line-height:1.6;margin-top:6px}
+    @media (max-width:520px){ .form-grid{grid-template-columns:1fr} }
+
+    /* ---- responsivo ---- */
+    @media (max-width:820px){
+      .login-brand{display:none}
+      .logo-mobile{display:flex}
+      .topbar .estab{display:none}
+      .content{padding:20px 16px}
+      .sidebar{display:none}
+      .tabbar{display:flex}
+      .body{padding-bottom:0}
+      .planos-grid{grid-template-columns:1fr !important}
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Supabase JS via CDN (só é usado quando configurado) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+  /* ============================================================
+     DocFlow AI — app (vanilla JS)
+     Um arquivo, sem build. Mesma abordagem do FeedbackJá.
+  ============================================================ */
+
+  // ---- Config Supabase (deixe vazio para MODO MOCK) ----------------
+  // Quando preencher, o app passa a usar o banco real automaticamente.
+  const SUPABASE_URL = "https://gkwyziimbcpuvrejwrmj.supabase.co";       // ex: https://xxxx.supabase.co
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrd3l6aWltYmNwdXZyZWp3cm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDQ5NzcsImV4cCI6MjEwMDgyMDk3N30.svPSJo3lojzWjmrdJQXziE39gIc5eSoBbgsa_gEwO2Q";  // ex: eyJ...
+
+  const MODO_MOCK = !SUPABASE_URL || !SUPABASE_ANON_KEY;
+  let sb = null;
+  if (!MODO_MOCK && window.supabase) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  if (MODO_MOCK && console && console.log) {
+    console.log("[DocFlow] MODO MOCK — sem Supabase. Preencha SUPABASE_URL e SUPABASE_ANON_KEY para usar o banco real.");
+  }
+
+  /* ============================================================
+     DADOS MOCKADOS (banco fake em memória)
+     ⚠️ senhas só para o mock local. No Supabase real a
+        autenticação é via Supabase Auth, nunca senha em texto.
+  ============================================================ */
+  const MOCK = {
+    logins: [
+      { email:"helena@farmaciavida.com.br", senha:"docflow123", perfil_id:"perfil-1" },
+      { email:"demo@docflow.ai", senha:"demo", perfil_id:"perfil-1" },
+    ],
+    estabelecimentos: [
+      { id:"estab-1", nome:"Farmácia Vida", segmento:"farmacia", cidade:"Centro",
+        plano:"premium", status_assinatura:"ativa", setup_pago:true },
+    ],
+    perfis: [
+      { id:"perfil-1", estabelecimento_id:"estab-1", nome:"Dra. Helena Costa",
+        email:"helena@farmaciavida.com.br", papel:"responsavel_tecnico", iniciais:"HC" },
+    ],
+    colaboradores: [
+      { id:"colab-1", estabelecimento_id:"estab-1", nome:"Marcos Lima", cpf:"123.456.789-01", cargo:"Farmacêutico", papel:"editor", crf:"CRF-SP 45678", email:"marcos@farmaciavida.com.br", telefone:"(11) 98888-1111", admissao:"2024-03-15", ativo:true },
+      { id:"colab-2", estabelecimento_id:"estab-1", nome:"Beatriz Nunes", cpf:"234.567.890-12", cargo:"Balconista", papel:"leitor", crf:"", email:"beatriz@farmaciavida.com.br", telefone:"(11) 98888-2222", admissao:"2024-06-01", ativo:true },
+      { id:"colab-3", estabelecimento_id:"estab-1", nome:"Rafael Souza", cpf:"345.678.901-23", cargo:"Balconista", papel:"leitor", crf:"", email:"rafael@farmaciavida.com.br", telefone:"(11) 98888-3333", admissao:"2025-01-10", ativo:true },
+      { id:"colab-4", estabelecimento_id:"estab-1", nome:"Carla Mendes", cpf:"456.789.012-34", cargo:"Auxiliar", papel:"leitor", crf:"", email:"carla@farmaciavida.com.br", telefone:"(11) 98888-4444", admissao:"2025-02-20", ativo:true },
+      { id:"colab-5", estabelecimento_id:"estab-1", nome:"João Pereira", cpf:"567.890.123-45", cargo:"Balconista", papel:"leitor", crf:"", email:"joao@farmaciavida.com.br", telefone:"(11) 98888-5555", admissao:"2023-11-05", ativo:true },
+      { id:"colab-6", estabelecimento_id:"estab-1", nome:"Tiago Alves", cpf:"678.901.234-56", cargo:"Balconista", papel:"leitor", crf:"", email:"tiago@farmaciavida.com.br", telefone:"(11) 98888-6666", admissao:"2025-05-12", ativo:true },
+      { id:"colab-7", estabelecimento_id:"estab-1", nome:"Sônia Reis", cpf:"789.012.345-67", cargo:"Auxiliar", papel:"leitor", crf:"", email:"sonia@farmaciavida.com.br", telefone:"(11) 98888-7777", admissao:"2024-09-30", ativo:false },
+    ],
+    pops: [
+      { id:"POP-001", estabelecimento_id:"estab-1", nome:"Dispensação de Medicamentos Controlados", categoria:"Dispensação", status:"vigente", origem:"modelo", versao_atual:4, leitura_obrigatoria:true, atualizado_em:"2026-07-12" },
+      { id:"POP-002", estabelecimento_id:"estab-1", nome:"Recebimento e Conferência de Mercadorias", categoria:"Logística", status:"vigente", origem:"modelo", versao_atual:2, leitura_obrigatoria:true, atualizado_em:"2026-06-28" },
+      { id:"POP-003", estabelecimento_id:"estab-1", nome:"Controle de Temperatura de Termolábeis", categoria:"Armazenamento", status:"revisar", origem:"importado", versao_atual:3, leitura_obrigatoria:true, atualizado_em:"2026-03-02" },
+      { id:"POP-004", estabelecimento_id:"estab-1", nome:"Higienização de Superfícies e Bancadas", categoria:"Limpeza", status:"vigente", origem:"modelo", versao_atual:1, leitura_obrigatoria:false, atualizado_em:"2026-07-15" },
+      { id:"POP-005", estabelecimento_id:"estab-1", nome:"Descarte de Medicamentos Vencidos", categoria:"Resíduos", status:"rascunho", origem:"ia", versao_atual:2, leitura_obrigatoria:false, atualizado_em:"2026-07-20" },
+      { id:"POP-006", estabelecimento_id:"estab-1", nome:"Atendimento Farmacêutico e Orientação", categoria:"Atendimento", status:"vigente", origem:"modelo", versao_atual:5, leitura_obrigatoria:true, atualizado_em:"2026-07-09" },
+    ],
+    leituras: [
+      { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-1", leitor_nome:"Marcos Lima", leitor_cargo:"Farmacêutico", confirmado_em:"2026-07-22T09:14:00Z" },
+      { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-2", leitor_nome:"Beatriz Nunes", leitor_cargo:"Balconista", confirmado_em:"2026-07-22T08:47:00Z" },
+      { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-3", leitor_nome:"Rafael Souza", leitor_cargo:"Balconista", confirmado_em:"2026-07-21T17:32:00Z" },
+      { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-4", leitor_nome:"Carla Mendes", leitor_cargo:"Auxiliar", confirmado_em:"2026-07-21T14:05:00Z" },
+      { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-5", leitor_nome:"João Pereira", leitor_cargo:"Balconista", confirmado_em:"2026-07-20T10:58:00Z" },
+    ],
+    alertas: [
+      { norma:"RDC nº 430/2020", tema:"Boas práticas de distribuição e armazenagem", segmento:"farmacia", grau:"alto", pop_afetado_id:"POP-003", publicado_em:"2026-07-18" },
+      { norma:"Portaria SVS/MS 344/98", tema:"Substâncias sob controle especial", segmento:"farmacia", grau:"medio", pop_afetado_id:"POP-001", publicado_em:"2026-07-10" },
+    ],
+  };
+
+  const totalEquipe = (estabId) =>
+    MOCK.colaboradores.filter(c => c.estabelecimento_id === estabId && c.ativo).length;
+
+  // Iniciais a partir do nome (2 primeiras palavras).
+  const iniciaisDe = (nome) =>
+    String(nome||"").split(" ").filter(Boolean).slice(0,2).map(w => w[0]).join("").toUpperCase();
+
+  /* ============================================================
+     PERMISSÕES (papéis: responsavel_tecnico | editor | leitor)
+  ============================================================ */
+  const PAPEL_LABEL = {
+    responsavel_tecnico: "Responsável Técnico",
+    editor: "Editor",
+    leitor: "Leitor",
+  };
+  // O que cada papel pode fazer.
+  const PERMISSOES = {
+    responsavel_tecnico: { criar:true, editar:true, aprovar:true, publicar:true, gerenciarEquipe:true },
+    editor:              { criar:true, editar:true, aprovar:false, publicar:false, gerenciarEquipe:false },
+    leitor:              { criar:false, editar:false, aprovar:false, publicar:false, gerenciarEquipe:false },
+  };
+  // Papel do usuário logado (o perfil é sempre RT no mock; funcionários têm papel próprio).
+  function papelAtual(){ return (Auth.perfil && Auth.perfil.papel) || "responsavel_tecnico"; }
+  function pode(acao){ const p = PERMISSOES[papelAtual()] || {}; return !!p[acao]; }
+
+  /* ============================================================
+     ACESSO A DADOS (mock; espelha o que virá do Supabase)
+  ============================================================ */
+  const DB = {
+    listarPops(estabId){
+      const equipe = totalEquipe(estabId);
+      return MOCK.pops
+        .filter(p => p.estabelecimento_id === estabId)
+        .map(p => {
+          const leram = p.status === "rascunho" ? 0 :
+            MOCK.leituras.filter(l => l.pop_id === p.id && l.versao_numero === p.versao_atual).length;
+          const alerta = MOCK.alertas.some(a => a.pop_afetado_id === p.id) || p.status === "revisar";
+          return Object.assign({}, p, { leram, equipe, alerta });
+        });
+    },
+    getPop(popId){ return MOCK.pops.find(p => p.id === popId) || null; },
+    getLeituras(popId, versao){
+      return MOCK.leituras
+        .filter(l => l.pop_id === popId && l.versao_numero === versao)
+        .slice().sort((a,b) => b.confirmado_em.localeCompare(a.confirmado_em));
+    },
+    getPendentes(popId, versao, estabId){
+      const leram = new Set(
+        MOCK.leituras.filter(l => l.pop_id === popId && l.versao_numero === versao).map(l => l.colaborador_id)
+      );
+      return MOCK.colaboradores.filter(c => c.estabelecimento_id === estabId && c.ativo && !leram.has(c.id));
+    },
+    listarAlertas(segmento){
+      return MOCK.alertas
+        .filter(a => a.segmento === segmento)
+        .slice().sort((a,b) => b.publicado_em.localeCompare(a.publicado_em));
+    },
+
+    // ---- Funcionários ----
+    listarFuncionarios(estabId, incluirInativos){
+      return MOCK.colaboradores
+        .filter(c => c.estabelecimento_id === estabId && (incluirInativos || c.ativo))
+        .slice().sort((a,b) => a.nome.localeCompare(b.nome));
+    },
+    getFuncionario(id){ return MOCK.colaboradores.find(c => c.id === id) || null; },
+    salvarFuncionario(dados){
+      if (dados.id){
+        const i = MOCK.colaboradores.findIndex(c => c.id === dados.id);
+        if (i >= 0) MOCK.colaboradores[i] = Object.assign({}, MOCK.colaboradores[i], dados);
+        return MOCK.colaboradores[i];
+      }
+      const novo = Object.assign({
+        id: "colab-" + Date.now(),
+        estabelecimento_id: (Auth.estabelecimento && Auth.estabelecimento.id) || "estab-1",
+        ativo: true,
+      }, dados);
+      MOCK.colaboradores.push(novo);
+      return novo;
+    },
+    inativarFuncionario(id){
+      const c = MOCK.colaboradores.find(x => x.id === id);
+      if (c) c.ativo = false;
+    },
+    reativarFuncionario(id){
+      const c = MOCK.colaboradores.find(x => x.id === id);
+      if (c) c.ativo = true;
+    },
+  };
+
+  // Formata "2026-07-22T09:14:00Z" em "22/07/2026 · 09:14"
+  function fmtDataHora(iso){
+    const d = new Date(iso);
+    const p = (n) => String(n).padStart(2,"0");
+    return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} · ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function fmtData(iso){
+    const d = new Date(iso + (iso.length <= 10 ? "T00:00:00" : ""));
+    const p = (n) => String(n).padStart(2,"0");
+    return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  }
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, m =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+
+  // Valida CPF pelos dígitos verificadores (peso jurídico do registro).
+  function cpfValido(cpf){
+    const s = String(cpf).replace(/\D/g, "");
+    if (s.length !== 11 || /^(\d)\1{10}$/.test(s)) return false;
+    let soma = 0;
+    for (let i = 0; i < 9; i++) soma += parseInt(s[i]) * (10 - i);
+    let d1 = 11 - (soma % 11); if (d1 >= 10) d1 = 0;
+    if (d1 !== parseInt(s[9])) return false;
+    soma = 0;
+    for (let i = 0; i < 10; i++) soma += parseInt(s[i]) * (11 - i);
+    let d2 = 11 - (soma % 11); if (d2 >= 10) d2 = 0;
+    return d2 === parseInt(s[10]);
+  }
+  // Formata "12345678901" → "123.456.789-01"
+  function mascaraCpf(v){
+    const s = String(v).replace(/\D/g, "").slice(0, 11);
+    return s.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+
+  /* ============================================================
+     ESTADO DE NAVEGAÇÃO
+  ============================================================ */
+  const App = {
+    tela: "biblioteca",   // biblioteca | pop | alertas | planos | equipe
+    popId: null,          // POP aberto
+    abaPop: "documento",  // documento | leitura
+    busca: "",
+    funcEdit: null,       // funcionário em edição (null = ninguém; {} = novo)
+    funcErro: null,       // mensagem de erro do formulário
+    mostrarInativos: false,
+  };
+  function irPara(tela, popId){
+    App.tela = tela;
+    if (popId !== undefined) App.popId = popId;
+    if (tela === "pop") App.abaPop = "documento";
+    render();
+  }
+
+  /* ============================================================
+     AUTENTICAÇÃO
+  ============================================================ */
+  const Auth = {
+    perfil: null,
+    estabelecimento: null,
+
+    _carregarContexto(perfilId){
+      this.perfil = MOCK.perfis.find(p => p.id === perfilId) || null;
+      this.estabelecimento = this.perfil
+        ? MOCK.estabelecimentos.find(e => e.id === this.perfil.estabelecimento_id) || null
+        : null;
+    },
+
+    async entrarComEmail(email, senha){
+      if (MODO_MOCK){
+        const u = MOCK.logins.find(x => x.email === email.trim().toLowerCase() && x.senha === senha);
+        if (!u) return { erro:"E-mail ou senha incorretos." };
+        this._carregarContexto(u.perfil_id);
+        return {};
+      }
+      const { error } = await sb.auth.signInWithPassword({ email, password:senha });
+      if (error) return { erro:error.message };
+      await this._hidratarReal();
+      return {};
+    },
+
+    async entrarComGoogle(){
+      if (MODO_MOCK){ this._carregarContexto("perfil-1"); return {}; }
+      const { error } = await sb.auth.signInWithOAuth({
+        provider:"google", options:{ redirectTo:window.location.origin }
+      });
+      return error ? { erro:error.message } : {};
+    },
+
+    async _hidratarReal(){
+      const { data:{ user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { data:p } = await sb.from("perfis").select("*").eq("user_id",user.id).single();
+      this.perfil = p;
+      if (p){
+        const { data:e } = await sb.from("estabelecimentos").select("*").eq("id",p.estabelecimento_id).single();
+        this.estabelecimento = e;
+      }
+    },
+
+    async sair(){
+      if (!MODO_MOCK) await sb.auth.signOut();
+      this.perfil = null; this.estabelecimento = null;
+      render();
+    },
+  };
+
+  /* ============================================================
+     ÍCONES (SVG inline)
+  ============================================================ */
+  const ic = {
+    file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    mail:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>',
+    lock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    arrow:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    shield:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>',
+    logout:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+    loader:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>',
+    google:'<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>',
+    folder:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>',
+    bell:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+    card:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+    eye:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    plus:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    clock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    warn:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    share:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+    download:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    shieldc:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>',
+    users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    edit:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>',
+    phone:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>',
+    x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  };
+
+  /* ============================================================
+     VIEWS
+  ============================================================ */
+  function viewLogin(){
+    return `
+      <div class="login-wrap">
+        <aside class="login-brand">
+          <div class="brand-logo">
+            <div class="mark">${ic.file}</div>
+            <div>
+              <div class="name">DocFlow<span>AI</span></div>
+              <div class="sub">CONFORMIDADE SANITÁRIA</div>
+            </div>
+          </div>
+          <div>
+            <h1>Seus POPs organizados, atualizados e prontos para a fiscalização.</h1>
+            <p>Controle de versões, registro de leitura da equipe e alertas quando a legislação muda. Tudo em um só lugar.</p>
+          </div>
+          <div class="brand-foot">${ic.shield} Dados isolados por estabelecimento · trilha auditável</div>
+          <div class="circle" style="right:-120px;bottom:-120px;width:340px;height:340px"></div>
+          <div class="circle" style="right:-60px;bottom:-60px;width:220px;height:220px"></div>
+        </aside>
+
+        <main class="login-form-wrap">
+          <div class="login-card">
+            <div class="logo-mobile">
+              <div class="mark">${ic.file}</div>
+              <div class="name">DocFlow<span>AI</span></div>
+            </div>
+            <h2>Entrar</h2>
+            <div class="lead">Acesse a plataforma da sua farmácia.</div>
+
+            <button class="btn btn-block" id="btn-google">${ic.google} Continuar com Google</button>
+
+            <div class="divider"><div class="ln"></div><span>ou com e-mail</span><div class="ln"></div></div>
+
+            <form id="form-login">
+              <label class="field">E-mail</label>
+              <div class="input-wrap">${ic.mail}<input type="email" id="in-email" placeholder="voce@farmacia.com.br" autocomplete="email" required /></div>
+              <label class="field">Senha</label>
+              <div class="input-wrap">${ic.lock}<input type="password" id="in-senha" placeholder="••••••••" autocomplete="current-password" required /></div>
+              <div style="text-align:right;margin:8px 0 18px"><a href="#">Esqueci a senha</a></div>
+              <div id="login-err"></div>
+              <button type="submit" class="btn btn-primary btn-block" id="btn-entrar">Entrar ${ic.arrow}</button>
+            </form>
+
+            <p style="font-size:13px;color:var(--ink-soft);text-align:center;margin-top:22px">
+              Ainda não tem conta? <a href="#" style="font-weight:600">Assinar agora</a>
+            </p>
+
+            ${MODO_MOCK ? `<div class="demo-box"><strong>Modo demonstração</strong><br>e-mail: demo@docflow.ai · senha: demo</div>` : ""}
+          </div>
+        </main>
+      </div>`;
+  }
+
+  // ---- Badge de status ----
+  function badge(status){
+    const map = {
+      vigente:["b-vigente","vigente"], revisar:["b-revisar","revisar"],
+      rascunho:["b-rascunho","rascunho"], aprovacao:["b-aprovacao","aprovação"],
+    };
+    const [cls,txt] = map[status] || map.rascunho;
+    return `<span class="badge-pill ${cls}">${txt}</span>`;
+  }
+
+  // ---- App shell: topbar + sidebar/tabbar + conteúdo ----
+  function viewApp(inner){
+    const p = Auth.perfil || {}, e = Auth.estabelecimento || {};
+    const nav = (tela, icon, label, badgeN) => `
+      <button class="nav-item ${App.tela===tela?"active":""}" data-nav="${tela}">
+        ${icon}<span>${label}</span>${badgeN?`<span class="badge">${badgeN}</span>`:""}
+      </button>`;
+    const tab = (tela, icon, label, dot) => `
+      <button class="tab ${App.tela===tela?"active":""}" data-nav="${tela}">
+        ${dot?'<span class="dot"></span>':""}${icon}<span class="lbl">${label}</span>
+      </button>`;
+    const nAlertas = DB.listarAlertas(e.segmento || "farmacia").length;
+
+    return `
+      <div class="app">
+        <header class="topbar">
+          <div class="mark">${ic.file}</div>
+          <div class="name">DocFlow<span>AI</span></div>
+          <div class="estab">${escapeHtml(e.nome||"")}<br>${escapeHtml(e.cidade||"")} · plano ${escapeHtml(e.plano||"")}</div>
+          <button class="btn-logout" id="btn-sair">${ic.logout} Sair</button>
+        </header>
+        <div class="body">
+          <aside class="sidebar">
+            ${nav("biblioteca", ic.folder, "Biblioteca")}
+            ${nav("alertas", ic.bell, "Alertas regulatórios", nAlertas)}
+            ${pode("gerenciarEquipe") ? nav("equipe", ic.users, "Equipe") : ""}
+            ${nav("planos", ic.card, "Planos")}
+            <div class="sidebar-foot">
+              <div class="user-chip">
+                <div class="av">${escapeHtml(p.iniciais||"?")}</div>
+                <div><div class="nm">${escapeHtml(p.nome||"")}</div>
+                <div class="rl">${PAPEL_LABEL[papelAtual()]||""}</div></div>
+              </div>
+            </div>
+          </aside>
+          <div class="content">${inner}</div>
+        </div>
+        <nav class="tabbar">
+          ${tab("biblioteca", ic.folder, "POPs")}
+          ${tab("alertas", ic.bell, "Alertas", nAlertas>0)}
+          ${pode("gerenciarEquipe") ? tab("equipe", ic.users, "Equipe") : ""}
+          ${tab("planos", ic.card, "Planos")}
+        </nav>
+      </div>`;
+  }
+
+  // ---- Tela: Biblioteca ----
+  function viewBiblioteca(){
+    const e = Auth.estabelecimento || {};
+    let pops = DB.listarPops(e.id);
+    const q = App.busca.trim().toLowerCase();
+    if (q) pops = pops.filter(p => p.nome.toLowerCase().includes(q));
+
+    const cards = pops.map(p => `
+      <button class="pop-card ${p.alerta?"alerta":""}" data-pop="${p.id}">
+        <div>
+          <div class="meta-top">
+            <span class="pid">${p.id}</span>
+            ${badge(p.status)}
+            ${p.alerta?`<span class="badge-pill b-alto">${ic.warn} revisão normativa</span>`:""}
+          </div>
+          <div class="nome">${escapeHtml(p.nome)}</div>
+          <div class="meta-bot">
+            <span class="sub">${escapeHtml(p.categoria)} · v${p.versao_atual} · atualizado ${fmtData(p.atualizado_em)}</span>
+            ${p.status!=="rascunho"?`<span class="leram ${p.leram===p.equipe?"full":""}">${ic.eye} ${p.leram}/${p.equipe} leram</span>`:""}
+          </div>
+        </div>
+        <span class="chev">${ic.chev}</span>
+      </button>`).join("");
+
+    return `
+      <div class="page-head">
+        <div class="eyebrow">${escapeHtml(e.nome||"")} · Unidade ${escapeHtml(e.cidade||"")}</div>
+        <h1>Biblioteca de POPs</h1>
+      </div>
+      <div class="toolbar">
+        <div class="search">${ic.search}<input id="in-busca" placeholder="Buscar procedimento…" value="${escapeHtml(App.busca)}"></div>
+        <button class="btn btn-primary" id="btn-novo">${ic.plus} Novo POP</button>
+      </div>
+      <div class="pop-list">${cards || `<p style="color:var(--ink-soft);padding:20px 0">Nenhum procedimento encontrado.</p>`}</div>`;
+  }
+
+  // ---- Tela: POP (documento + leitura) ----
+  function viewPop(){
+    const e = Auth.estabelecimento || {};
+    const p = DB.getPop(App.popId);
+    if (!p) return `<button class="back-link" data-nav="biblioteca">← Biblioteca</button><p>POP não encontrado.</p>`;
+    const leituras = DB.getLeituras(p.id, p.versao_atual);
+    const equipe = totalEquipe(e.id);
+
+    const faixa = App._leu
+      ? `<div class="faixa ok">${ic.check}<span class="txt">Leitura confirmada por <strong>${escapeHtml(Auth.perfil.nome)}</strong> em ${fmtDataHora(new Date().toISOString())} · v${p.versao_atual}</span></div>`
+      : `<div class="faixa pend">${ic.eye}<span class="txt">Você ainda não confirmou a leitura da versão vigente deste procedimento.</span><button class="btn-amber" id="btn-confirmar">Confirmar leitura</button></div>`;
+
+    const totalLeram = leituras.length + (App._leu ? 1 : 0);
+
+    let corpo;
+    if (App.abaPop === "leitura"){
+      corpo = viewLeitura(p, leituras, equipe, totalLeram);
+    } else {
+      corpo = `
+        <div class="doc-card">
+          <div class="doc-sec">1. Objetivo</div>
+          <p>Estabelecer o procedimento para dispensação de medicamentos sujeitos a controle especial, garantindo a rastreabilidade e a conformidade com a legislação sanitária vigente.</p>
+          <div class="doc-sec">2. Responsabilidades</div>
+          <p>O farmacêutico responsável técnico é encarregado da conferência da receita, escrituração no SNGPC e orientação ao paciente. O balconista auxilia na organização e no atendimento inicial.</p>
+          <div class="doc-sec">3. Procedimento</div>
+          <p>Receber a receita, verificar a validade e a numeração, conferir os dados do prescritor e do paciente, separar o medicamento, registrar a saída no SNGPC e reter a via conforme exigência legal.</p>
+        </div>
+        <div class="doc-actions">
+          <button class="btn btn-primary">${ic.check} Enviar para aprovação</button>
+          <button class="btn">${ic.share} Distribuir para leitura</button>
+          <button class="btn">${ic.download} Exportar PDF</button>
+        </div>`;
+    }
+
+    return `
+      <button class="back-link" data-nav="biblioteca">← Biblioteca</button>
+      <div class="meta-top" style="margin-bottom:6px">
+        <span class="pid">${p.id}</span>${badge(p.status)}
+      </div>
+      <h1 style="font-size:24px;font-weight:700;margin-bottom:16px">${escapeHtml(p.nome)}</h1>
+      ${faixa}
+      <div class="tabs">
+        <button class="tab-btn ${App.abaPop==="documento"?"active":""}" data-aba="documento">${ic.file} Documento</button>
+        <button class="tab-btn ${App.abaPop==="leitura"?"active":""}" data-aba="leitura">${ic.eye} Leitura (${totalLeram}/${equipe})</button>
+      </div>
+      ${corpo}`;
+  }
+
+  function viewLeitura(p, leituras, equipe, totalLeram){
+    const e = Auth.estabelecimento || {};
+    let registros = leituras.slice();
+    if (App._leu){
+      registros.unshift({ leitor_nome:Auth.perfil.nome, leitor_cargo:"Responsável técnica",
+        iniciais:Auth.perfil.iniciais, confirmado_em:new Date().toISOString(), versao_numero:p.versao_atual, voce:true });
+    }
+    const lista = registros.map(l => `
+      <div class="read-item" ${l.voce?'style="background:var(--brand-soft)"':""}>
+        <div class="av">${escapeHtml(l.iniciais || iniciaisDe(l.leitor_nome))}</div>
+        <div class="who"><div class="n">${escapeHtml(l.leitor_nome)}${l.voce?' <span style="font-family:var(--mono);font-size:10px;color:var(--brand)">· você</span>':""}</div>
+          <div class="c">${escapeHtml(l.leitor_cargo)}</div></div>
+        <div class="when"><div>${ic.clock} ${fmtDataHora(l.confirmado_em)}</div><div class="v">leu v${l.versao_numero}</div></div>
+      </div>`).join("");
+
+    const pendentes = DB.getPendentes(p.id, p.versao_atual, e.id)
+      .filter(c => !(App._leu && c.id === (Auth.perfil.colaborador_id)))
+      .map(c => `
+        <div class="pend-chip">
+          <div class="av">${escapeHtml(c.iniciais)}</div>
+          <div><div class="n">${escapeHtml(c.nome)}</div><div class="c">${escapeHtml(c.cargo)}</div></div>
+          <button class="btn-amber" style="margin-left:6px">Lembrar</button>
+        </div>`).join("");
+
+    return `
+      <div class="stat-row">
+        <div class="stat"><div class="num" style="color:var(--green)">${totalLeram}<small>/${equipe}</small></div><div class="lbl">confirmaram leitura</div></div>
+        <div class="stat"><div class="num" style="color:var(--amber)">${equipe-totalLeram}</div><div class="lbl">leitura pendente</div></div>
+      </div>
+      <div class="sec-label">Registro de leitura</div>
+      <div class="read-list">${lista || '<div style="padding:16px;color:var(--ink-soft);font-size:13px">Ninguém confirmou ainda.</div>'}</div>
+      <div class="sec-label">Aguardando leitura</div>
+      <div class="pend-chips">${pendentes || '<div style="color:var(--ink-soft);font-size:13px">Todos leram. ✓</div>'}</div>`;
+  }
+
+  // ---- Tela: Alertas ----
+  function viewAlertas(){
+    const e = Auth.estabelecimento || {};
+    const alertas = DB.listarAlertas(e.segmento || "farmacia");
+    const cards = alertas.map(a => `
+      <div style="background:var(--panel);border:1px solid var(--line);border-left:3px solid ${a.grau==="alto"?"var(--red)":"var(--amber)"};border-radius:10px;padding:17px 19px;margin-bottom:12px">
+        <div class="meta-top">
+          <span style="font-family:var(--mono);font-size:13px;font-weight:700">${escapeHtml(a.norma)}</span>
+          <span class="badge-pill b-${a.grau}">impacto ${a.grau}</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-soft)">${fmtData(a.publicado_em)}</span>
+        </div>
+        <p style="font-size:15px;margin:8px 0 12px">${escapeHtml(a.tema)}</p>
+        ${a.pop_afetado_id?`<div style="display:flex;align-items:center;gap:8px;background:var(--amber-soft);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--amber)">${ic.warn} Documento afetado: <strong>${a.pop_afetado_id}</strong>
+          <button class="btn-amber" style="margin-left:auto" data-pop="${a.pop_afetado_id}">Revisar agora</button></div>`:""}
+      </div>`).join("");
+    return `
+      <div class="page-head"><div style="display:flex;align-items:center;gap:10px">${ic.shieldc}<h1 style="margin:0">Alertas regulatórios</h1></div>
+        <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Mudanças normativas que afetam os documentos da sua farmácia.</p></div>
+      ${cards}
+      <div style="margin-top:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-soft);padding:16px;border:1px dashed var(--line);border-radius:10px">
+        Monitoramento curado pela equipe DocFlow · fontes oficiais ANVISA e Vigilância Sanitária</div>`;
+  }
+
+  // ---- Tela: Equipe ----
+  function roleTag(papel){
+    const map = { responsavel_tecnico:["role-rt","RT"], editor:["role-editor","Editor"], leitor:["role-leitor","Leitor"] };
+    const [cls,txt] = map[papel] || map.leitor;
+    return `<span class="role-tag ${cls}">${txt}</span>`;
+  }
+
+  function viewEquipe(){
+    const e = Auth.estabelecimento || {};
+    const lista = DB.listarFuncionarios(e.id, App.mostrarInativos);
+    const cards = lista.map(c => `
+      <div class="team-card ${c.ativo?"":"inativo"}">
+        <div class="av">${escapeHtml(iniciaisDe(c.nome))}</div>
+        <div>
+          <div class="nome">${escapeHtml(c.nome)} ${roleTag(c.papel)} ${c.ativo?"":'<span class="role-tag role-leitor">inativo</span>'}</div>
+          <div class="sub">${escapeHtml(c.cargo)}${c.crf?" · "+escapeHtml(c.crf):""} · CPF ${escapeHtml(c.cpf)}</div>
+          <div class="sub">${escapeHtml(c.email||"")}${c.telefone?" · "+escapeHtml(c.telefone):""}</div>
+        </div>
+        <div class="acts">
+          <button class="icon-btn" data-editfunc="${c.id}" title="Editar">${ic.edit}</button>
+          ${c.ativo
+            ? `<button class="icon-btn" data-inativar="${c.id}" title="Inativar">${ic.x}</button>`
+            : `<button class="icon-btn" data-reativar="${c.id}" title="Reativar" style="color:var(--green)">${ic.check}</button>`}
+        </div>
+      </div>`).join("");
+
+    return `
+      <div class="page-head">
+        <div style="display:flex;align-items:center;gap:10px">${ic.users}<h1 style="margin:0">Equipe</h1></div>
+        <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Cadastre os funcionários que leem os POPs e defina quem pode editar e aprovar documentos.</p>
+      </div>
+      <div class="toolbar">
+        <label class="team-toggle"><input type="checkbox" id="chk-inativos" ${App.mostrarInativos?"checked":""}> Mostrar inativos</label>
+        <button class="btn btn-primary" id="btn-novo-func" style="margin-left:auto">${ic.plus} Novo funcionário</button>
+      </div>
+      <div class="team-list">${cards || '<p style="color:var(--ink-soft);padding:20px 0">Nenhum funcionário cadastrado.</p>'}</div>
+      ${App.funcEdit !== null ? viewFuncForm() : ""}`;
+  }
+
+  // ---- Formulário (modal) de funcionário ----
+  function viewFuncForm(){
+    const f = App.funcEdit || {};
+    const novo = !f.id;
+    const opt = (v,txt,sel) => `<option value="${v}" ${sel===v?"selected":""}>${txt}</option>`;
+    return `
+      <div class="modal-bg" id="modal-bg">
+        <div class="modal">
+          <div class="modal-head">
+            <h2>${novo?"Novo funcionário":"Editar funcionário"}</h2>
+            <button class="icon-btn" id="func-fechar" style="border:none">${ic.x}</button>
+          </div>
+          ${App.funcErro?`<div class="err">${escapeHtml(App.funcErro)}</div>`:""}
+          <div class="form-grid">
+            <div class="fld full"><label>Nome completo <span class="req">*</span></label>
+              <input id="f-nome" value="${escapeHtml(f.nome||"")}" placeholder="Nome e sobrenome"></div>
+            <div class="fld"><label>CPF <span class="req">*</span></label>
+              <input id="f-cpf" value="${escapeHtml(f.cpf||"")}" placeholder="000.000.000-00" inputmode="numeric">
+              <div class="hint">Obrigatório — identifica quem leu cada POP.</div></div>
+            <div class="fld"><label>Cargo <span class="req">*</span></label>
+              <input id="f-cargo" value="${escapeHtml(f.cargo||"")}" placeholder="Ex: Balconista"></div>
+            <div class="fld"><label>Papel no sistema <span class="req">*</span></label>
+              <select id="f-papel">
+                ${opt("leitor","Leitor — só lê e confirma",f.papel||"leitor")}
+                ${opt("editor","Editor — cria e edita POPs",f.papel)}
+                ${opt("responsavel_tecnico","Responsável Técnico — acesso total",f.papel)}
+              </select></div>
+            <div class="fld"><label>CRF (se farmacêutico)</label>
+              <input id="f-crf" value="${escapeHtml(f.crf||"")}" placeholder="CRF-UF 00000"></div>
+            <div class="fld"><label>E-mail <span class="req">*</span></label>
+              <input id="f-email" value="${escapeHtml(f.email||"")}" placeholder="email@exemplo.com" inputmode="email"></div>
+            <div class="fld"><label>Telefone <span class="req">*</span></label>
+              <input id="f-tel" value="${escapeHtml(f.telefone||"")}" placeholder="(00) 00000-0000" inputmode="tel"></div>
+            <div class="fld full"><label>Data de admissão <span class="req">*</span></label>
+              <input id="f-adm" type="date" value="${escapeHtml(f.admissao||"")}">
+              <div class="hint">Comprova que a pessoa estava na equipe na data da leitura.</div></div>
+          </div>
+          <div class="role-help">
+            <strong>Sobre os papéis:</strong> apenas o Responsável Técnico pode aprovar e publicar POPs e gerenciar a equipe. O Editor prepara documentos, mas a versão vigente sempre passa pelo RT.
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="func-salvar" style="flex:1;justify-content:center">${novo?"Cadastrar":"Salvar alterações"}</button>
+            <button class="btn" id="func-cancelar">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+
+  function viewPlanos(){
+    const inclB = ["Biblioteca de POPs e modelos de farmácia","Editor com controle de versões e histórico","Registro de leitura da equipe (data e hora)","Distribuição por link e QR code","Assistente de redação com IA","Exportação em PDF"];
+    const inclP = ["Tudo do plano Essencial","Alertas de mudanças em RDCs e Portarias","Sinalização automática de POPs a revisar","Curadoria por fontes oficiais da ANVISA"];
+    const li = (arr, icon) => arr.map((f,i) => `<div style="display:flex;gap:10px;margin-bottom:10px;align-items:flex-start">${i===0&&icon==="s"?ic.check:(icon==="s"?ic.shieldc:ic.check)}<span style="font-size:14px;line-height:1.4">${f}</span></div>`).join("");
+    return `
+      <div class="page-head"><h1>Planos e assinatura</h1>
+        <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Toda assinatura começa com a implantação da sua biblioteca, feita pela nossa equipe.</p></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--brand-deep);border-radius:12px;padding:18px 22px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px"><div style="font-size:16px;font-weight:700;color:#fff">Implantação inicial</div>
+          <div style="font-size:13px;color:#B6D8D3;margin-top:2px">Biblioteca configurada e pronta no primeiro acesso.</div></div>
+        <div style="text-align:right"><div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#fff">R$ 47</div>
+          <div style="font-family:var(--mono);font-size:11px;color:#8FD4C9">pagamento único</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="planos-grid">
+        <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em">Essencial</div>
+          <div style="margin:10px 0 4px"><span style="font-family:var(--mono);font-size:34px;font-weight:700">R$ 39,90</span><span style="font-size:14px;color:var(--ink-soft)">/mês</span></div>
+          <div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">+ R$ 47 de implantação</div>
+          <button class="btn btn-block" style="margin-bottom:20px">Assinar Essencial</button>
+          ${li(inclB,"c")}
+        </div>
+        <div style="background:var(--panel);border:2px solid var(--brand);border-radius:14px;padding:26px;position:relative">
+          <div style="position:absolute;top:-11px;right:22px;background:var(--brand);color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:5px">Recomendado</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--brand);text-transform:uppercase;letter-spacing:.08em">Premium · Regulatório</div>
+          <div style="margin:10px 0 4px"><span style="font-family:var(--mono);font-size:34px;font-weight:700">R$ 69,90</span><span style="font-size:14px;color:var(--ink-soft)">/mês</span></div>
+          <div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">+ R$ 47 de implantação</div>
+          <button class="btn btn-primary btn-block" style="margin-bottom:20px">Assinar Premium</button>
+          ${li(inclP,"s")}
+        </div>
+      </div>`;
+  }
+
+  /* ============================================================
+     RENDER + EVENTOS
+  ============================================================ */
+  const root = document.getElementById("root");
+
+  function render(){
+    if (!Auth.perfil){
+      root.innerHTML = viewLogin();
+      ligarLogin();
+      return;
+    }
+    // App logado: escolhe a tela interna
+    let inner;
+    if (App.tela === "pop") inner = viewPop();
+    else if (App.tela === "alertas") inner = viewAlertas();
+    else if (App.tela === "planos") inner = viewPlanos();
+    else if (App.tela === "equipe") inner = viewEquipe();
+    else inner = viewBiblioteca();
+
+    root.innerHTML = viewApp(inner);
+    ligarApp();
+  }
+
+  function ligarApp(){
+    // Sair
+    const btnSair = document.getElementById("btn-sair");
+    if (btnSair) btnSair.onclick = () => { App.tela="biblioteca"; App.popId=null; App._leu=false; Auth.sair(); };
+
+    // Navegação (sidebar, tabbar, back-links, botões data-nav)
+    document.querySelectorAll("[data-nav]").forEach(el => {
+      el.onclick = () => { App._leu=false; irPara(el.getAttribute("data-nav")); };
+    });
+
+    // Abrir POP (cards e botões "revisar" com data-pop)
+    document.querySelectorAll("[data-pop]").forEach(el => {
+      el.onclick = (ev) => { ev.stopPropagation(); App._leu=false; irPara("pop", el.getAttribute("data-pop")); };
+    });
+
+    // Busca na biblioteca
+    const busca = document.getElementById("in-busca");
+    if (busca){
+      busca.oninput = () => { App.busca = busca.value; };
+      busca.onkeyup = (e) => {
+        // re-render preservando foco/cursor
+        const pos = busca.selectionStart;
+        render();
+        const nb = document.getElementById("in-busca");
+        if (nb){ nb.focus(); nb.setSelectionRange(pos,pos); }
+      };
+    }
+
+    // Novo POP (placeholder por enquanto)
+    const btnNovo = document.getElementById("btn-novo");
+    if (btnNovo) btnNovo.onclick = () => alert("Criação de POP (modelo / importar / IA) — próxima etapa.");
+
+    // Abas do POP
+    document.querySelectorAll("[data-aba]").forEach(el => {
+      el.onclick = () => { App.abaPop = el.getAttribute("data-aba"); render(); };
+    });
+
+    // Confirmar leitura
+    const btnConf = document.getElementById("btn-confirmar");
+    if (btnConf) btnConf.onclick = () => { App._leu = true; render(); };
+
+    // ---- Equipe ----
+    const chkInativos = document.getElementById("chk-inativos");
+    if (chkInativos) chkInativos.onchange = () => { App.mostrarInativos = chkInativos.checked; render(); };
+
+    const btnNovoFunc = document.getElementById("btn-novo-func");
+    if (btnNovoFunc) btnNovoFunc.onclick = () => { App.funcEdit = {}; App.funcErro = null; render(); };
+
+    document.querySelectorAll("[data-editfunc]").forEach(el => {
+      el.onclick = () => { App.funcEdit = Object.assign({}, DB.getFuncionario(el.getAttribute("data-editfunc"))); App.funcErro = null; render(); };
+    });
+    document.querySelectorAll("[data-inativar]").forEach(el => {
+      el.onclick = () => { if (confirm("Inativar este funcionário? O histórico de leitura é preservado.")){ DB.inativarFuncionario(el.getAttribute("data-inativar")); render(); } };
+    });
+    document.querySelectorAll("[data-reativar]").forEach(el => {
+      el.onclick = () => { DB.reativarFuncionario(el.getAttribute("data-reativar")); render(); };
+    });
+
+    // Formulário de funcionário
+    const fecharForm = () => { App.funcEdit = null; App.funcErro = null; render(); };
+    const bg = document.getElementById("modal-bg");
+    if (bg) bg.onclick = (ev) => { if (ev.target === bg) fecharForm(); };
+    const btnFechar = document.getElementById("func-fechar");
+    if (btnFechar) btnFechar.onclick = fecharForm;
+    const btnCancelar = document.getElementById("func-cancelar");
+    if (btnCancelar) btnCancelar.onclick = fecharForm;
+
+    // máscara de CPF ao digitar
+    const inCpf = document.getElementById("f-cpf");
+    if (inCpf) inCpf.oninput = () => { const pos = inCpf.selectionStart; inCpf.value = mascaraCpf(inCpf.value); };
+
+    const btnSalvar = document.getElementById("func-salvar");
+    if (btnSalvar) btnSalvar.onclick = () => {
+      const get = (id) => (document.getElementById(id).value || "").trim();
+      const dados = {
+        nome: get("f-nome"), cpf: get("f-cpf"), cargo: get("f-cargo"),
+        papel: get("f-papel"), crf: get("f-crf"), email: get("f-email"),
+        telefone: get("f-tel"), admissao: get("f-adm"),
+      };
+      // validações
+      if (!dados.nome){ App.funcErro = "Informe o nome completo."; render(); return; }
+      if (!cpfValido(dados.cpf)){ App.funcErro = "CPF inválido. Verifique os números."; render(); return; }
+      if (!dados.cargo){ App.funcErro = "Informe o cargo."; render(); return; }
+      if (!dados.email || !dados.email.includes("@")){ App.funcErro = "Informe um e-mail válido."; render(); return; }
+      if (!dados.telefone){ App.funcErro = "Informe o telefone."; render(); return; }
+      if (!dados.admissao){ App.funcErro = "Informe a data de admissão."; render(); return; }
+      // CPF duplicado
+      const e = Auth.estabelecimento || {};
+      const dup = DB.listarFuncionarios(e.id, true).find(c => c.cpf === dados.cpf && c.id !== (App.funcEdit && App.funcEdit.id));
+      if (dup){ App.funcErro = "Já existe um funcionário com este CPF."; render(); return; }
+
+      if (App.funcEdit && App.funcEdit.id) dados.id = App.funcEdit.id;
+      DB.salvarFuncionario(dados);
+      App.funcEdit = null; App.funcErro = null;
+      render();
+    };
+  }
+
+  function ligarLogin(){
+    const form = document.getElementById("form-login");
+    const btnEntrar = document.getElementById("btn-entrar");
+    const btnGoogle = document.getElementById("btn-google");
+    const errBox = document.getElementById("login-err");
+
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      errBox.innerHTML = "";
+      btnEntrar.disabled = true;
+      btnEntrar.innerHTML = ic.loader;
+      const email = document.getElementById("in-email").value;
+      const senha = document.getElementById("in-senha").value;
+      const { erro } = await Auth.entrarComEmail(email, senha);
+      if (erro){
+        errBox.innerHTML = `<div class="err">${erro}</div>`;
+        btnEntrar.disabled = false;
+        btnEntrar.innerHTML = `Entrar ${ic.arrow}`;
+      } else {
+        render();
+      }
+    };
+
+    btnGoogle.onclick = async () => {
+      btnGoogle.disabled = true;
+      btnGoogle.innerHTML = ic.loader + " Conectando…";
+      const { erro } = await Auth.entrarComGoogle();
+      if (erro){
+        errBox.innerHTML = `<div class="err">${erro}</div>`;
+        btnGoogle.disabled = false;
+        btnGoogle.innerHTML = `${ic.google} Continuar com Google`;
+      } else if (MODO_MOCK){
+        render();
+      }
+    };
+  }
+
+  // Inicialização: no modo real, recupera sessão existente.
+  (async function init(){
+    try {
+      if (!MODO_MOCK && sb){
+        const { data } = await sb.auth.getSession();
+        if (data && data.session) await Auth._hidratarReal();
+      }
+    } catch (e) {
+      console.log("[DocFlow] erro ao inicializar sessão:", e && e.message);
+    }
+    render();
+  })();
+  </script>
+</body>
+</html>

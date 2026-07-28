@@ -1,0 +1,7 @@
+Coloque aqui os ícones do PWA:
+- icon-192.png  (192 x 192 pixels)
+- icon-512.png  (512 x 512 pixels)
+
+Eles são referenciados no manifest.json e usados quando o app
+é instalado no celular (tela inicial). Sem eles o app funciona,
+mas o ícone de instalação fica genérico.
