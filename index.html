@@ -234,6 +234,37 @@
       color:var(--ink);text-transform:uppercase;letter-spacing:.04em;font-weight:600;
       margin:22px 0 12px}
     .model-sec svg{color:var(--brand)}
+
+    /* distribuir */
+    .dist-grid{display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start}
+    .dist-grid > div{min-width:0}
+    .dist-link{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .dist-link .box{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--panel);
+      border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-family:var(--mono);
+      font-size:12.5px;color:var(--ink);overflow:hidden}
+    .dist-link .box span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .dist-steps{background:var(--brand-soft);border-radius:12px;padding:18px 20px}
+    .dist-steps h3{font-size:14px;font-weight:700;color:var(--brand-deep);margin-bottom:10px}
+    .dist-step{display:flex;gap:10px;margin-bottom:9px;align-items:flex-start;font-size:13px;line-height:1.5}
+    .dist-step .n{font-family:var(--mono);font-weight:700;color:var(--brand);min-width:16px}
+    .qr-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center}
+    .qr-box{width:180px;height:180px;margin:12px auto;background:#fff;border:1px solid var(--line);
+      border-radius:10px;display:grid;place-items:center;padding:10px}
+    .qr-box img,.qr-box canvas{max-width:100%;height:auto}
+
+    /* visão colaborador (tela cheia) */
+    .colab-wrap{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:0 16px}
+    .colab-top{width:100%;max-width:640px;display:flex;align-items:center;gap:9px;padding:16px 0}
+    .colab-top .mk{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#8B5CFF,#6C3BF5);display:grid;place-items:center}
+    .colab-card{width:100%;max-width:640px;background:var(--panel);border:1px solid var(--line);
+      border-radius:16px;padding:26px;margin-bottom:30px}
+    .colab-doc{max-height:none}
+    .colab-hint{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-align:center;margin-top:14px;line-height:1.6}
+    .colab-ok{text-align:center;padding:16px 0}
+    .colab-ok .circle-ok{width:64px;height:64px;border-radius:99px;background:var(--green-soft);
+      display:grid;place-items:center;margin:0 auto 16px}
+
+    @media (max-width:900px){ .dist-grid{grid-template-columns:1fr} }
     @media (max-width:600px){ .opt-grid{grid-template-columns:1fr} .pop-editor{min-height:260px;font-size:13px} }
 
     /* leitura */
@@ -350,6 +381,8 @@
 
   <!-- Supabase JS via CDN (só é usado quando configurado) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Gerador de QR Code (para distribuição de POPs) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
   <script>
   /* ============================================================
@@ -590,6 +623,32 @@
       );
       return MOCK.colaboradores.filter(c => c.estabelecimento_id === estabId && c.ativo && !leram.has(c.id));
     },
+    // Registra confirmação de leitura (data/hora do "servidor"), amarrada ao CPF.
+    confirmarLeitura(popId, versao, colaborador){
+      // evita duplicar leitura do mesmo colaborador na mesma versão
+      const jaLeu = MOCK.leituras.some(l =>
+        l.pop_id === popId && l.versao_numero === versao && l.colaborador_id === colaborador.id);
+      if (jaLeu) return null;
+      const reg = {
+        pop_id: popId, versao_numero: versao,
+        colaborador_id: colaborador.id,
+        leitor_nome: colaborador.nome, leitor_cpf: colaborador.cpf,
+        leitor_cargo: colaborador.cargo,
+        confirmado_em: new Date().toISOString(),
+      };
+      MOCK.leituras.push(reg);
+      return reg;
+    },
+    // Um colaborador já leu a versão vigente?
+    jaLeu(popId, versao, colaboradorId){
+      return MOCK.leituras.some(l =>
+        l.pop_id === popId && l.versao_numero === versao && l.colaborador_id === colaboradorId);
+    },
+    buscarColaboradorPorCpf(estabId, cpf){
+      const limpo = String(cpf).replace(/\D/g,"");
+      return MOCK.colaboradores.find(c =>
+        c.estabelecimento_id === estabId && c.ativo && String(c.cpf).replace(/\D/g,"") === limpo) || null;
+    },
     listarAlertas(segmento){
       return MOCK.alertas
         .filter(a => a.segmento === segmento)
@@ -691,6 +750,15 @@
     novoPop: null,        // {} durante criação de POP
     novoErro: null,
     configAberta: false,  // modal de configurações do estabelecimento
+    distribuirPop: null,  // POP sendo distribuído (tela distribuir)
+    // Visão pública do colaborador (leitura via link)
+    colabPop: null,       // POP aberto no modo colaborador
+    colabEtapa: "ler",    // ler | identificar | feito
+    colabCpf: "",
+    colabErro: null,
+    colabRegistro: null,  // registro gerado após confirmar
+    alertaEdit: null,     // alerta em edição no painel (null | {})
+    alertaErro: null,
   };
   function irPara(tela, popId){
     App.tela = tela;
@@ -794,6 +862,11 @@
     upload:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
     blank:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
     gear:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+    copy:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    link2:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    wpp:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.5-.9-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-1 1-1 2.3s1 2.7 1.1 2.8c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2"/></svg>',
+    printer:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    idcard:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="8" cy="10" r="2"/><path d="M14 8h4"/><path d="M14 12h4"/><path d="M5 16h6"/></svg>',
   };
 
   /* ============================================================
@@ -969,12 +1042,18 @@
     if (!p) return `<button class="back-link" data-nav="biblioteca">← Biblioteca</button><p>POP não encontrado.</p>`;
     const leituras = DB.getLeituras(p.id, p.versao_atual);
     const equipe = totalEquipe(e.id);
+    const totalLeram = leituras.length;
 
-    const faixa = App._leu
-      ? `<div class="faixa ok">${ic.check}<span class="txt">Leitura confirmada por <strong>${escapeHtml(Auth.perfil.nome)}</strong> em ${fmtDataHora(new Date().toISOString())} · v${p.versao_atual}</span></div>`
-      : `<div class="faixa pend">${ic.eye}<span class="txt">Você ainda não confirmou a leitura da versão vigente deste procedimento.</span><button class="btn-amber" id="btn-confirmar">Confirmar leitura</button></div>`;
-
-    const totalLeram = leituras.length + (App._leu ? 1 : 0);
+    // Resumo real de leitura da versão vigente (visível se o POP exige leitura).
+    let faixa = "";
+    if (p.status === "vigente"){
+      const completo = totalLeram >= equipe && equipe > 0;
+      faixa = completo
+        ? `<div class="faixa ok">${ic.check}<span class="txt">Toda a equipe (${totalLeram}/${equipe}) confirmou a leitura da versão vigente.</span></div>`
+        : `<div class="faixa pend">${ic.eye}<span class="txt">${totalLeram} de ${equipe} confirmaram a leitura da v${p.versao_atual}. Faltam ${equipe-totalLeram}.</span><button class="btn-amber" id="btn-faixa-distribuir">Distribuir</button></div>`;
+    } else if (p.status === "rascunho" || p.status === "aprovacao"){
+      faixa = `<div class="faixa pend">${ic.warn}<span class="txt">Este POP ainda não está vigente. Publique-o para exigir a leitura da equipe.</span></div>`;
+    }
 
     let corpo;
     if (App.abaPop === "leitura"){
@@ -1045,35 +1124,32 @@
 
   function viewLeitura(p, leituras, equipe, totalLeram){
     const e = Auth.estabelecimento || {};
-    let registros = leituras.slice();
-    if (App._leu){
-      registros.unshift({ leitor_nome:Auth.perfil.nome, leitor_cargo:"Responsável técnica",
-        iniciais:Auth.perfil.iniciais, confirmado_em:new Date().toISOString(), versao_numero:p.versao_atual, voce:true });
-    }
+    const registros = leituras.slice();
     const lista = registros.map(l => `
-      <div class="read-item" ${l.voce?'style="background:var(--brand-soft)"':""}>
-        <div class="av">${escapeHtml(l.iniciais || iniciaisDe(l.leitor_nome))}</div>
-        <div class="who"><div class="n">${escapeHtml(l.leitor_nome)}${l.voce?' <span style="font-family:var(--mono);font-size:10px;color:var(--brand)">· você</span>':""}</div>
-          <div class="c">${escapeHtml(l.leitor_cargo)}</div></div>
+      <div class="read-item">
+        <div class="av">${escapeHtml(iniciaisDe(l.leitor_nome))}</div>
+        <div class="who"><div class="n">${escapeHtml(l.leitor_nome)}</div>
+          <div class="c">${escapeHtml(l.leitor_cargo||"")}${l.leitor_cpf?" · CPF "+escapeHtml(l.leitor_cpf):""}</div></div>
         <div class="when"><div>${ic.clock} ${fmtDataHora(l.confirmado_em)}</div><div class="v">leu v${l.versao_numero}</div></div>
       </div>`).join("");
 
     const pendentes = DB.getPendentes(p.id, p.versao_atual, e.id)
-      .filter(c => !(App._leu && c.id === (Auth.perfil.colaborador_id)))
       .map(c => `
         <div class="pend-chip">
-          <div class="av">${escapeHtml(c.iniciais)}</div>
+          <div class="av">${escapeHtml(iniciaisDe(c.nome))}</div>
           <div><div class="n">${escapeHtml(c.nome)}</div><div class="c">${escapeHtml(c.cargo)}</div></div>
-          <button class="btn-amber" style="margin-left:6px">Lembrar</button>
         </div>`).join("");
 
     return `
       <div class="stat-row">
         <div class="stat"><div class="num" style="color:var(--green)">${totalLeram}<small>/${equipe}</small></div><div class="lbl">confirmaram leitura</div></div>
-        <div class="stat"><div class="num" style="color:var(--amber)">${equipe-totalLeram}</div><div class="lbl">leitura pendente</div></div>
+        <div class="stat"><div class="num" style="color:var(--amber)">${Math.max(0,equipe-totalLeram)}</div><div class="lbl">leitura pendente</div></div>
+      </div>
+      <div class="doc-actions" style="margin-bottom:18px">
+        <button class="btn btn-primary" id="leitura-distribuir">${ic.share} Distribuir para leitura</button>
       </div>
       <div class="sec-label">Registro de leitura</div>
-      <div class="read-list">${lista || '<div style="padding:16px;color:var(--ink-soft);font-size:13px">Ninguém confirmou ainda.</div>'}</div>
+      <div class="read-list">${lista || '<div style="padding:16px;color:var(--ink-soft);font-size:13px">Ninguém confirmou ainda. Distribua o POP para a equipe.</div>'}</div>
       <div class="sec-label">Aguardando leitura</div>
       <div class="pend-chips">${pendentes || '<div style="color:var(--ink-soft);font-size:13px">Todos leram. ✓</div>'}</div>`;
   }
@@ -1313,6 +1389,99 @@
       </div>`;
   }
 
+  // ---- Tela: Distribuir POP (link + QR) ----
+  function linkLeitura(pop){
+    const e = Auth.estabelecimento || {};
+    const base = (window.location && window.location.origin && window.location.origin !== "null")
+      ? window.location.origin + window.location.pathname : "https://docflow.vercel.app";
+    return `${base}#/ler/${e.id}/${pop.id}`;
+  }
+
+  function viewDistribuir(){
+    const p = DB.getPop(App.distribuirPop);
+    if (!p) return `<button class="back-link" data-nav="biblioteca">← Biblioteca</button><p>POP não encontrado.</p>`;
+    const link = linkLeitura(p);
+    return `
+      <button class="back-link" id="dist-voltar">← Voltar ao POP</button>
+      <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.share}</div>
+        <div><h1 style="margin-top:0">Distribuir para leitura</h1>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">${p.id} · ${escapeHtml(p.nome)}</p></div></div></div>
+      <div class="dist-grid">
+        <div>
+          <div class="sec-label">Link de leitura</div>
+          <div class="dist-link">
+            <div class="box">${ic.link2} <span id="dist-url">${escapeHtml(link)}</span></div>
+            <button class="btn btn-primary" id="dist-copiar">${ic.copy} Copiar</button>
+          </div>
+          <div class="dist-steps">
+            <h3>Como funciona</h3>
+            <div class="dist-step"><span class="n">1.</span><span>O colaborador abre o link no celular — sem precisar criar conta.</span></div>
+            <div class="dist-step"><span class="n">2.</span><span>Ele lê o procedimento e confirma a leitura informando o CPF cadastrado.</span></div>
+            <div class="dist-step"><span class="n">3.</span><span>A confirmação entra no registro com nome, CPF, data e hora.</span></div>
+          </div>
+          <div class="doc-actions" style="margin-top:16px">
+            <button class="btn" id="dist-wpp">${ic.wpp} Enviar no WhatsApp</button>
+            <button class="btn" id="dist-testar">${ic.eye} Testar visão do colaborador</button>
+          </div>
+        </div>
+        <div class="qr-card">
+          <div class="sec-label" style="margin-bottom:0">QR Code</div>
+          <div class="qr-box" id="qr-box"></div>
+          <p style="font-size:12px;color:var(--ink-soft);line-height:1.5;margin-top:4px">Imprima e cole no balcão. Cada leitura fica registrada no nome de quem escaneou.</p>
+          <button class="btn" id="dist-imprimir" style="width:100%;justify-content:center;margin-top:10px">${ic.printer} Imprimir QR</button>
+        </div>
+      </div>`;
+  }
+
+  // ---- Visão do colaborador (tela cheia, sem barra de gestão) ----
+  function viewColaborador(){
+    const p = App.colabPop;
+    if (!p) return `<div style="padding:40px;text-align:center">POP não encontrado.</div>`;
+    let corpo;
+    if (App.colabEtapa === "feito"){
+      const r = App.colabRegistro || {};
+      corpo = `
+        <div class="colab-ok">
+          <div class="circle-ok">${ic.check}</div>
+          <h2 style="font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:6px">Leitura registrada</h2>
+          <p style="font-size:14px;color:var(--ink-soft)">${escapeHtml(r.leitor_nome||"")}, sua confirmação foi registrada em ${r.confirmado_em?fmtDataHora(r.confirmado_em):""}.</p>
+          <div style="display:inline-block;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-soft);padding:6px 12px;border-radius:6px">${p.id} · v${p.versao_atual}</div>
+        </div>`;
+    } else if (App.colabEtapa === "identificar"){
+      corpo = `
+        <div style="border-top:1px solid var(--line);padding-top:18px">
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px">Confirme sua identidade</div>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px">Informe o CPF cadastrado pela sua farmácia para registrar a leitura.</p>
+          ${App.colabErro?`<div class="err">${escapeHtml(App.colabErro)}</div>`:""}
+          <div class="input-wrap" style="margin-bottom:12px">${ic.idcard}<input id="colab-cpf" placeholder="000.000.000-00" inputmode="numeric" value="${escapeHtml(App.colabCpf)}"></div>
+          <button class="btn btn-primary btn-block" id="colab-confirmar" style="padding:13px">Confirmar leitura</button>
+        </div>`;
+    } else {
+      corpo = `<button class="btn btn-primary btn-block" id="colab-li" style="margin-top:22px;padding:14px">Li e entendi este procedimento</button>`;
+    }
+    return `
+      <div class="colab-wrap">
+        <div class="colab-top">
+          <div class="mk">${ic.file}</div>
+          <span style="font-family:var(--display);font-weight:700;font-size:14px">DocFlow<span style="color:var(--brand)">AI</span></span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-soft)">${escapeHtml((Auth.estabelecimento||{}).nome||"")}</span>
+          <button class="back-link" id="colab-sair" style="margin:0 0 0 10px">sair</button>
+        </div>
+        <div class="colab-card">
+          ${App.colabEtapa!=="feito"?`
+            <div class="meta-top" style="margin-bottom:8px">
+              <span class="pid">${p.id} · v${p.versao_atual}</span>
+              <span class="badge-pill b-vigente">vigente</span>
+            </div>
+            <h1 style="font-family:var(--display);font-size:19px;font-weight:700;margin-bottom:16px;letter-spacing:-.01em">${escapeHtml(p.nome)}</h1>
+            <div class="doc-card" style="border:none;padding:0">${renderConteudo(p.conteudo)}</div>
+          `:""}
+          ${corpo}
+        </div>
+        ${App.colabEtapa==="ler"?'<p class="colab-hint">Sua leitura será registrada com CPF, data e hora.<br>Sem necessidade de criar conta.</p>':""}
+      </div>`;
+  }
+
   function viewPlanos(){
     const inclB = ["Biblioteca de POPs e modelos de farmácia","Editor com controle de versões e histórico","Registro de leitura da equipe (data e hora)","Distribuição por link e QR code","Assistente de redação com IA","Exportação em PDF"];
     const inclP = ["Tudo do plano Essencial","Alertas de mudanças em RDCs e Portarias","Sinalização automática de POPs a revisar","Curadoria por fontes oficiais da ANVISA"];
@@ -1351,6 +1520,12 @@
   const root = document.getElementById("root");
 
   function render(){
+    // Visão do colaborador é tela cheia, fora do app shell (com ou sem login).
+    if (App.tela === "colaborador"){
+      root.innerHTML = viewColaborador();
+      ligarColaborador();
+      return;
+    }
     if (!Auth.perfil){
       root.innerHTML = viewLogin();
       ligarLogin();
@@ -1360,6 +1535,7 @@
     let inner;
     if (App.tela === "pop") inner = viewPop();
     else if (App.tela === "novopop") inner = viewNovoPop();
+    else if (App.tela === "distribuir") inner = viewDistribuir();
     else if (App.tela === "alertas") inner = viewAlertas();
     else if (App.tela === "planos") inner = viewPlanos();
     else if (App.tela === "equipe") inner = viewEquipe();
@@ -1367,6 +1543,27 @@
 
     root.innerHTML = viewApp(inner);
     ligarApp();
+    // renderiza o QR depois que o DOM existe
+    if (App.tela === "distribuir") desenharQR();
+  }
+
+  // Gera o QR Code na caixa (usa a lib qrcodejs via CDN).
+  function desenharQR(){
+    const box = document.getElementById("qr-box");
+    if (!box) return;
+    const p = DB.getPop(App.distribuirPop);
+    if (!p) return;
+    box.innerHTML = "";
+    try {
+      if (window.QRCode){
+        new window.QRCode(box, { text: linkLeitura(p), width: 160, height: 160,
+          colorDark: "#160A33", colorLight: "#ffffff" });
+      } else {
+        box.innerHTML = '<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">QR indisponível offline</span>';
+      }
+    } catch(e){
+      box.innerHTML = '<span style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">QR indisponível</span>';
+    }
   }
 
   function ligarApp(){
@@ -1490,11 +1687,16 @@
     const btnAprovar = document.getElementById("btn-aprovar");
     if (btnAprovar) btnAprovar.onclick = () => { DB.definirStatus(App.popId, "vigente"); render(); };
 
-    // Distribuir / PDF (próximas etapas — avisos por enquanto)
+    // Distribuir → tela de distribuição
     const btnDist = document.getElementById("btn-distribuir");
-    if (btnDist) btnDist.onclick = () => alert("Distribuição por link/QR — próxima etapa (A4).");
+    if (btnDist) btnDist.onclick = () => { App.distribuirPop = App.popId; irPara("distribuir"); };
+    const btnFaixaDist = document.getElementById("btn-faixa-distribuir");
+    if (btnFaixaDist) btnFaixaDist.onclick = () => { App.distribuirPop = App.popId; irPara("distribuir"); };
+    const btnLeituraDist = document.getElementById("leitura-distribuir");
+    if (btnLeituraDist) btnLeituraDist.onclick = () => { App.distribuirPop = App.popId; irPara("distribuir"); };
+    // Exportar PDF (via janela de impressão do navegador)
     const btnPdf = document.getElementById("btn-pdf");
-    if (btnPdf) btnPdf.onclick = () => alert("Exportar PDF — próxima etapa (A6).");
+    if (btnPdf) btnPdf.onclick = () => exportarPopPDF(App.popId);
 
     // Abas do POP
     document.querySelectorAll("[data-aba]").forEach(el => {
@@ -1504,6 +1706,32 @@
     // Confirmar leitura
     const btnConf = document.getElementById("btn-confirmar");
     if (btnConf) btnConf.onclick = () => { App._leu = true; render(); };
+
+    // ---- Distribuir ----
+    const distVoltar = document.getElementById("dist-voltar");
+    if (distVoltar) distVoltar.onclick = () => { App.popId = App.distribuirPop; irPara("pop"); };
+    const distCopiar = document.getElementById("dist-copiar");
+    if (distCopiar) distCopiar.onclick = () => {
+      const p = DB.getPop(App.distribuirPop);
+      const url = linkLeitura(p);
+      copiarTexto(url);
+      distCopiar.innerHTML = `${ic.check} Copiado`;
+      setTimeout(() => { distCopiar.innerHTML = `${ic.copy} Copiar`; }, 1600);
+    };
+    const distWpp = document.getElementById("dist-wpp");
+    if (distWpp) distWpp.onclick = () => {
+      const p = DB.getPop(App.distribuirPop);
+      const msg = `Leitura obrigatória do POP "${p.nome}": ${linkLeitura(p)}`;
+      window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+    };
+    const distTestar = document.getElementById("dist-testar");
+    if (distTestar) distTestar.onclick = () => {
+      App.colabPop = DB.getPop(App.distribuirPop);
+      App.colabEtapa = "ler"; App.colabCpf = ""; App.colabErro = null; App.colabRegistro = null;
+      irPara("colaborador");
+    };
+    const distImprimir = document.getElementById("dist-imprimir");
+    if (distImprimir) distImprimir.onclick = () => window.print();
 
     // ---- Equipe ----
     const chkInativos = document.getElementById("chk-inativos");
@@ -1597,6 +1825,89 @@
         render();
       }
     };
+  }
+
+  // ---- Eventos da visão do colaborador ----
+  function ligarColaborador(){
+    const sair = document.getElementById("colab-sair");
+    if (sair) sair.onclick = () => {
+      // volta ao app se logado; senão, mostra login
+      App.colabPop = null; App.colabEtapa = "ler";
+      App.tela = Auth.perfil ? "distribuir" : "biblioteca";
+      render();
+    };
+    const btnLi = document.getElementById("colab-li");
+    if (btnLi) btnLi.onclick = () => { App.colabEtapa = "identificar"; App.colabErro = null; render(); };
+
+    const inCpf = document.getElementById("colab-cpf");
+    if (inCpf) inCpf.oninput = () => { inCpf.value = mascaraCpf(inCpf.value); App.colabCpf = inCpf.value; };
+
+    const btnConfirmar = document.getElementById("colab-confirmar");
+    if (btnConfirmar) btnConfirmar.onclick = () => {
+      const cpf = App.colabCpf;
+      const e = Auth.estabelecimento || {};
+      if (!cpfValido(cpf)){ App.colabErro = "CPF inválido. Verifique os números."; render(); return; }
+      const colab = DB.buscarColaboradorPorCpf(e.id, cpf);
+      if (!colab){ App.colabErro = "CPF não encontrado. Confirme com o responsável técnico se você está cadastrado."; render(); return; }
+      const p = App.colabPop;
+      const reg = DB.confirmarLeitura(p.id, p.versao_atual, colab);
+      // se já tinha lido, monta um registro informativo mesmo assim
+      App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
+      App.colabEtapa = "feito";
+      render();
+    };
+  }
+
+  // Copia texto para a área de transferência (com fallback).
+  function copiarTexto(txt){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt); return; }
+    } catch(e){}
+    const ta = document.createElement("textarea");
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  // Exporta o POP como PDF usando a janela de impressão do navegador.
+  function exportarPopPDF(popId){
+    const p = DB.getPop(popId);
+    if (!p) return;
+    const e = Auth.estabelecimento || {};
+    const rt = (Auth.perfil && Auth.perfil.nome) || "";
+    const hoje = fmtData(new Date().toISOString().slice(0,10));
+    const corpo = renderConteudo(p.conteudo);
+    const w = window.open("", "_blank");
+    if (!w){ alert("Permita pop-ups para exportar o PDF."); return; }
+    w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+      <title>${p.id} - ${p.nome}</title>
+      <style>
+        @page{margin:2cm}
+        body{font-family:Georgia,'Times New Roman',serif;color:#1B1430;line-height:1.6;max-width:720px;margin:0 auto}
+        .cab{border-bottom:2px solid #6C3BF5;padding-bottom:14px;margin-bottom:22px}
+        .cab .marca{font-family:Arial;font-weight:700;color:#6C3BF5;font-size:13px;letter-spacing:.05em}
+        .cab h1{font-size:20px;margin:8px 0 4px}
+        .cab .meta{font-family:Arial;font-size:12px;color:#6E6584}
+        .doc-sec{font-family:Arial;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#6C3BF5;margin:18px 0 6px}
+        p{margin:0 0 12px;text-align:justify}
+        .rod{margin-top:36px;border-top:1px solid #ccc;padding-top:12px;font-family:Arial;font-size:11px;color:#6E6584}
+        .assin{margin-top:48px;text-align:center}
+        .assin .ln{border-top:1px solid #333;width:280px;margin:0 auto 4px}
+      </style></head><body>
+      <div class="cab">
+        <div class="marca">DocFlow AI — ${escapeHtml(e.nome||"")}${e.cidade?" · "+escapeHtml(e.cidade):""}${e.uf?"/"+escapeHtml(e.uf):""}</div>
+        <h1>${escapeHtml(p.nome)}</h1>
+        <div class="meta">${p.id} · Versão ${p.versao_atual} · Status: ${escapeHtml(p.status)} · Emitido em ${hoje}</div>
+      </div>
+      ${corpo}
+      <div class="assin">
+        <div class="ln"></div>
+        <div style="font-family:Arial;font-size:12px">${escapeHtml(rt)} — Responsável Técnico</div>
+      </div>
+      <div class="rod">Documento gerado pelo DocFlow AI. A versão vigente e o registro de leitura da equipe encontram-se na plataforma.</div>
+      </body></html>`);
+    w.document.close();
+    setTimeout(() => { w.focus(); w.print(); }, 400);
   }
 
   // Inicialização: no modo real, recupera sessão existente.
