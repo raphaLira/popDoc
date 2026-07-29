@@ -896,22 +896,18 @@
     async _hidratarReal(){
       const { data:{ user } } = await sb.auth.getUser();
       if (!user) return;
-      let { data:p } = await sb.from("perfis").select("*").eq("user_id",user.id).maybeSingle();
-      // Primeiro acesso: cria estabelecimento + perfil se ainda não existirem.
-      if (!p){
-        const { data:novoEstab } = await sb.from("estabelecimentos")
-          .insert({ user_id:user.id, nome:"Minha Farmácia", segmento:"farmacia" }).select().single();
-        const nome = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || "";
-        const { data:novoPerfil } = await sb.from("perfis").insert({
-          user_id:user.id, estabelecimento_id: novoEstab ? novoEstab.id : null,
-          nome, email:user.email, papel:"responsavel_tecnico",
-          iniciais: iniciaisDe(nome || user.email),
-        }).select().single();
-        p = novoPerfil;
+      // O perfil e o estabelecimento são criados pelo trigger handle_novo_usuario
+      // no banco, no primeiro cadastro. Aqui apenas lemos.
+      // Pequeno retry: no 1º login o trigger pode levar um instante.
+      let p = null;
+      for (let tent = 0; tent < 3 && !p; tent++){
+        const { data } = await sb.from("perfis").select("*").eq("user_id", user.id).maybeSingle();
+        p = data;
+        if (!p) await new Promise(r => setTimeout(r, 600));
       }
       this.perfil = p;
       if (p){
-        const { data:e } = await sb.from("estabelecimentos").select("*").eq("id",p.estabelecimento_id).single();
+        const { data:e } = await sb.from("estabelecimentos").select("*").eq("id", p.estabelecimento_id).maybeSingle();
         this.estabelecimento = e;
       }
     },
