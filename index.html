@@ -392,8 +392,8 @@
 
   // ---- Config Supabase (deixe vazio para MODO MOCK) ----------------
   // Quando preencher, o app passa a usar o banco real automaticamente.
-  const SUPABASE_URL = "";       // ex: https://xxxx.supabase.co
-  const SUPABASE_ANON_KEY = "";  // ex: eyJ...
+  const SUPABASE_URL = "https://gkwyziimbcpuvrejwrmj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrd3l6aWltYmNwdXZyZWp3cm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDQ5NzcsImV4cCI6MjEwMDgyMDk3N30.svPSJo3lojzWjmrdJQXziE39gIc5eSoBbgsa_gEwO2Q";
 
   const MODO_MOCK = !SUPABASE_URL || !SUPABASE_ANON_KEY;
   let sb = null;
@@ -544,145 +544,234 @@
   /* ============================================================
      ACESSO A DADOS (mock; espelha o que virá do Supabase)
   ============================================================ */
+  /* ============================================================
+     STORE — espelho em memória dos dados do tenant.
+     No modo mock, aponta para os arrays do MOCK.
+     No modo real, é populado do Supabase por carregarDados().
+     As views leem sempre do Store (síncrono). As ações
+     escrevem no Supabase (async) e atualizam o Store.
+  ============================================================ */
+  const Store = {
+    pops: [], colaboradores: [], versoes: [], leituras: [], alertas: [], modelos: [],
+  };
+
+  // Converte uma linha do banco para o formato que o app usa (datas etc.).
+  function carregarDoMock(){
+    Store.pops = MOCK.pops;
+    Store.colaboradores = MOCK.colaboradores;
+    Store.versoes = MOCK.versoes;
+    Store.leituras = MOCK.leituras;
+    Store.alertas = MOCK.alertas;
+    Store.modelos = MOCK.modelos;
+  }
+
+  // Carrega todos os dados do tenant do Supabase para o Store.
+  async function carregarDados(){
+    if (MODO_MOCK){ carregarDoMock(); return; }
+    const e = Auth.estabelecimento;
+    if (!e){ return; }
+    const eid = e.id;
+    // Consultas em paralelo (RLS garante que só vêm dados do tenant).
+    const [pops, colabs, versoes, leituras, alertas, modelos] = await Promise.all([
+      sb.from("pops").select("*").eq("estabelecimento_id", eid),
+      sb.from("colaboradores").select("*").eq("estabelecimento_id", eid),
+      sb.from("versoes_pop").select("*").eq("estabelecimento_id", eid),
+      sb.from("registros_leitura").select("*").eq("estabelecimento_id", eid),
+      sb.from("alertas_regulatorios").select("*").eq("segmento", e.segmento || "farmacia"),
+      sb.from("modelos_pop").select("*"),
+    ]);
+    Store.pops = (pops.data || []).map(mapPop);
+    Store.colaboradores = (colabs.data || []).map(mapColab);
+    Store.versoes = (versoes.data || []).map(mapVersao);
+    Store.leituras = (leituras.data || []).map(mapLeitura);
+    Store.alertas = (alertas.data || []).map(mapAlerta);
+    Store.modelos = (modelos.data || []).map(mapModelo);
+  }
+
+  // Mapeadores banco → app (nomes de campo iguais; ajustam datas curtas).
+  const mapPop = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
+    categoria:r.categoria, status:r.status, origem:r.origem, versao_atual:r.versao_atual,
+    leitura_obrigatoria:r.leitura_obrigatoria, conteudo:r.conteudo||"",
+    atualizado_em:(r.atualizado_em||"").slice(0,10) });
+  const mapColab = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
+    cpf:r.cpf, cargo:r.cargo, papel:r.papel, crf:r.crf, email:r.email, telefone:r.telefone,
+    admissao:(r.admissao||"").slice(0,10), ativo:r.ativo });
+  const mapVersao = (r) => ({ pop_id:r.pop_id, numero:r.numero, autor_nome:r.autor_nome,
+    nota:r.nota, vigente:r.vigente, criado_em:r.criado_em });
+  const mapLeitura = (r) => ({ pop_id:r.pop_id, versao_numero:r.versao_numero,
+    colaborador_id:r.colaborador_id, leitor_nome:r.leitor_nome, leitor_cpf:r.leitor_cpf,
+    leitor_cargo:r.leitor_cargo, confirmado_em:r.confirmado_em });
+  const mapAlerta = (r) => ({ norma:r.norma, tema:r.tema, descricao:r.descricao, segmento:r.segmento,
+    grau:r.grau, pop_afetado_id:r.pop_afetado_id, fonte_url:r.fonte_url, publicado_em:(r.publicado_em||"").slice(0,10) });
+  const mapModelo = (r) => ({ id:r.id, nome:r.nome, categoria:r.categoria, uf:r.uf, base:r.base, conteudo:r.conteudo });
+
+  /* ============================================================
+     DB — leitura sempre do Store (síncrono).
+     Escrita: no mock altera o Store; no real persiste no
+     Supabase (funções async terminadas em "Async") e o
+     chamador atualiza o Store + re-renderiza.
+  ============================================================ */
   const DB = {
     listarPops(estabId){
       const equipe = totalEquipe(estabId);
-      return MOCK.pops
+      return Store.pops
         .filter(p => p.estabelecimento_id === estabId)
         .map(p => {
           const leram = p.status === "rascunho" ? 0 :
-            MOCK.leituras.filter(l => l.pop_id === p.id && l.versao_numero === p.versao_atual).length;
-          const alerta = MOCK.alertas.some(a => a.pop_afetado_id === p.id) || p.status === "revisar";
+            Store.leituras.filter(l => l.pop_id === p.id && l.versao_numero === p.versao_atual).length;
+          const alerta = Store.alertas.some(a => a.pop_afetado_id === p.id) || p.status === "revisar";
           return Object.assign({}, p, { leram, equipe, alerta });
-        });
+        })
+        .sort((a,b) => a.id.localeCompare(b.id));
     },
-    getPop(popId){ return MOCK.pops.find(p => p.id === popId) || null; },
-
-    // Histórico de versões do POP (mais recente primeiro).
+    getPop(popId){ return Store.pops.find(p => p.id === popId) || null; },
     getVersoes(popId){
-      return MOCK.versoes
-        .filter(v => v.pop_id === popId)
-        .slice().sort((a,b) => b.numero - a.numero);
+      return Store.versoes.filter(v => v.pop_id === popId).slice().sort((a,b) => b.numero - a.numero);
     },
-
-    // Cria um POP novo (de modelo, importado ou em branco).
-    criarPop(dados){
-      const e = Auth.estabelecimento || {};
-      // gera id sequencial POP-00X
-      const nums = MOCK.pops.map(p => parseInt((p.id.split("-")[1]||"0"),10)).filter(n=>!isNaN(n));
-      const prox = (nums.length ? Math.max.apply(null,nums) : 0) + 1;
-      const id = "POP-" + String(prox).padStart(3,"0");
-      const hoje = new Date().toISOString().slice(0,10);
-      const pop = {
-        id, estabelecimento_id: e.id, nome: dados.nome, categoria: dados.categoria||"Geral",
-        status: "rascunho", origem: dados.origem||"modelo", versao_atual: 1,
-        leitura_obrigatoria: false, atualizado_em: hoje, conteudo: dados.conteudo||"## 1. Objetivo\n\n\n## 2. Procedimento\n",
-      };
-      MOCK.pops.push(pop);
-      MOCK.versoes.push({ pop_id:id, numero:1, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"", nota:"Criação inicial do documento", vigente:true, criado_em:new Date().toISOString() });
-      return pop;
-    },
-
-    // Salva edição do conteúdo → gera nova versão.
-    salvarNovaVersao(popId, conteudo, nota){
-      const pop = MOCK.pops.find(p => p.id === popId);
-      if (!pop) return null;
-      const nova = pop.versao_atual + 1;
-      // marca versões antigas como não-vigentes
-      MOCK.versoes.filter(v => v.pop_id === popId).forEach(v => v.vigente = false);
-      MOCK.versoes.push({ pop_id:popId, numero:nova, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"", nota:nota||"Edição do documento", vigente:true, criado_em:new Date().toISOString() });
-      pop.conteudo = conteudo;
-      pop.versao_atual = nova;
-      pop.atualizado_em = new Date().toISOString().slice(0,10);
-      // ao mudar o conteúdo, se estava vigente volta a rascunho até reaprovar
-      if (pop.status === "vigente") pop.status = "rascunho";
-      return pop;
-    },
-
-    // Muda status (enviar para aprovação / aprovar-publicar).
-    definirStatus(popId, status){
-      const pop = MOCK.pops.find(p => p.id === popId);
-      if (pop){ pop.status = status; pop.atualizado_em = new Date().toISOString().slice(0,10); }
-      return pop;
-    },
-
-    listarModelos(uf){
-      // Genéricos (uf:null) aparecem sempre; os do estado, só se bater o uf.
-      return MOCK.modelos.filter(m => !m.uf || m.uf === uf);
-    },
-    modelosDoEstado(uf){ return MOCK.modelos.filter(m => m.uf === uf); },
-    modelosGenericos(){ return MOCK.modelos.filter(m => !m.uf); },
+    listarModelos(uf){ return Store.modelos.filter(m => !m.uf || m.uf === uf); },
+    modelosDoEstado(uf){ return Store.modelos.filter(m => m.uf === uf); },
+    modelosGenericos(){ return Store.modelos.filter(m => !m.uf); },
     getLeituras(popId, versao){
-      return MOCK.leituras
+      return Store.leituras
         .filter(l => l.pop_id === popId && l.versao_numero === versao)
         .slice().sort((a,b) => b.confirmado_em.localeCompare(a.confirmado_em));
     },
     getPendentes(popId, versao, estabId){
       const leram = new Set(
-        MOCK.leituras.filter(l => l.pop_id === popId && l.versao_numero === versao).map(l => l.colaborador_id)
+        Store.leituras.filter(l => l.pop_id === popId && l.versao_numero === versao).map(l => l.colaborador_id)
       );
-      return MOCK.colaboradores.filter(c => c.estabelecimento_id === estabId && c.ativo && !leram.has(c.id));
+      return Store.colaboradores.filter(c => c.estabelecimento_id === estabId && c.ativo && !leram.has(c.id));
     },
-    // Registra confirmação de leitura (data/hora do "servidor"), amarrada ao CPF.
-    confirmarLeitura(popId, versao, colaborador){
-      // evita duplicar leitura do mesmo colaborador na mesma versão
-      const jaLeu = MOCK.leituras.some(l =>
-        l.pop_id === popId && l.versao_numero === versao && l.colaborador_id === colaborador.id);
-      if (jaLeu) return null;
-      const reg = {
-        pop_id: popId, versao_numero: versao,
-        colaborador_id: colaborador.id,
-        leitor_nome: colaborador.nome, leitor_cpf: colaborador.cpf,
-        leitor_cargo: colaborador.cargo,
-        confirmado_em: new Date().toISOString(),
-      };
-      MOCK.leituras.push(reg);
-      return reg;
-    },
-    // Um colaborador já leu a versão vigente?
     jaLeu(popId, versao, colaboradorId){
-      return MOCK.leituras.some(l =>
+      return Store.leituras.some(l =>
         l.pop_id === popId && l.versao_numero === versao && l.colaborador_id === colaboradorId);
     },
     buscarColaboradorPorCpf(estabId, cpf){
       const limpo = String(cpf).replace(/\D/g,"");
-      return MOCK.colaboradores.find(c =>
+      return Store.colaboradores.find(c =>
         c.estabelecimento_id === estabId && c.ativo && String(c.cpf).replace(/\D/g,"") === limpo) || null;
     },
     listarAlertas(segmento){
-      return MOCK.alertas
-        .filter(a => a.segmento === segmento)
+      return Store.alertas.filter(a => a.segmento === segmento)
         .slice().sort((a,b) => b.publicado_em.localeCompare(a.publicado_em));
     },
-
-    // ---- Funcionários ----
     listarFuncionarios(estabId, incluirInativos){
-      return MOCK.colaboradores
+      return Store.colaboradores
         .filter(c => c.estabelecimento_id === estabId && (incluirInativos || c.ativo))
         .slice().sort((a,b) => a.nome.localeCompare(b.nome));
     },
-    getFuncionario(id){ return MOCK.colaboradores.find(c => c.id === id) || null; },
-    salvarFuncionario(dados){
-      if (dados.id){
-        const i = MOCK.colaboradores.findIndex(c => c.id === dados.id);
-        if (i >= 0) MOCK.colaboradores[i] = Object.assign({}, MOCK.colaboradores[i], dados);
-        return MOCK.colaboradores[i];
+    getFuncionario(id){ return Store.colaboradores.find(c => c.id === id) || null; },
+
+    // ---- AÇÕES (async — persistem e atualizam o Store) ----
+
+    async criarPop(dados){
+      const e = Auth.estabelecimento || {};
+      const nums = Store.pops.map(p => parseInt((p.id.split("-")[1]||"0"),10)).filter(n=>!isNaN(n));
+      const id = "POP-" + String((nums.length ? Math.max.apply(null,nums) : 0) + 1).padStart(3,"0");
+      const agora = new Date().toISOString();
+      const pop = {
+        id, estabelecimento_id:e.id, nome:dados.nome, categoria:dados.categoria||"Geral",
+        status:"rascunho", origem:dados.origem||"modelo", versao_atual:1,
+        leitura_obrigatoria:false, atualizado_em:agora.slice(0,10),
+        conteudo:dados.conteudo||"## 1. Objetivo\n\n\n## 2. Procedimento\n",
+      };
+      const versao = { pop_id:id, numero:1, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"",
+        nota:"Criação inicial do documento", vigente:true, criado_em:agora };
+      if (!MODO_MOCK){
+        await sb.from("pops").insert({ ...pop, estabelecimento_id:e.id, atualizado_em:agora, criado_em:agora });
+        await sb.from("versoes_pop").insert({ ...versao, estabelecimento_id:e.id });
       }
-      const novo = Object.assign({
-        id: "colab-" + Date.now(),
-        estabelecimento_id: (Auth.estabelecimento && Auth.estabelecimento.id) || "estab-1",
-        ativo: true,
-      }, dados);
-      MOCK.colaboradores.push(novo);
+      Store.pops.push(pop);
+      Store.versoes.push(versao);
+      return pop;
+    },
+
+    async salvarNovaVersao(popId, conteudo, nota){
+      const pop = Store.pops.find(p => p.id === popId);
+      if (!pop) return null;
+      const e = Auth.estabelecimento || {};
+      const nova = pop.versao_atual + 1;
+      const agora = new Date().toISOString();
+      const novoStatus = pop.status === "vigente" ? "rascunho" : pop.status;
+      const versao = { pop_id:popId, numero:nova, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"",
+        nota:nota||"Edição do documento", vigente:true, criado_em:agora };
+      if (!MODO_MOCK){
+        await sb.from("versoes_pop").update({ vigente:false }).eq("pop_id", popId).eq("estabelecimento_id", e.id);
+        await sb.from("versoes_pop").insert({ ...versao, estabelecimento_id:e.id });
+        await sb.from("pops").update({ conteudo, versao_atual:nova, status:novoStatus, atualizado_em:agora })
+          .eq("id", popId).eq("estabelecimento_id", e.id);
+      }
+      Store.versoes.filter(v => v.pop_id === popId).forEach(v => v.vigente = false);
+      Store.versoes.push(versao);
+      pop.conteudo = conteudo; pop.versao_atual = nova; pop.status = novoStatus;
+      pop.atualizado_em = agora.slice(0,10);
+      return pop;
+    },
+
+    async definirStatus(popId, status){
+      const pop = Store.pops.find(p => p.id === popId);
+      if (!pop) return null;
+      const e = Auth.estabelecimento || {};
+      const agora = new Date().toISOString();
+      if (!MODO_MOCK){
+        await sb.from("pops").update({ status, atualizado_em:agora }).eq("id", popId).eq("estabelecimento_id", e.id);
+      }
+      pop.status = status; pop.atualizado_em = agora.slice(0,10);
+      return pop;
+    },
+
+    async confirmarLeitura(popId, versao, colaborador){
+      if (DB.jaLeu(popId, versao, colaborador.id)) return null;
+      const e = Auth.estabelecimento || {};
+      const reg = { pop_id:popId, versao_numero:versao, colaborador_id:colaborador.id,
+        leitor_nome:colaborador.nome, leitor_cpf:colaborador.cpf, leitor_cargo:colaborador.cargo,
+        confirmado_em:new Date().toISOString() };
+      if (!MODO_MOCK){
+        const { data } = await sb.from("registros_leitura")
+          .insert({ ...reg, estabelecimento_id:e.id }).select().single();
+        if (data) reg.confirmado_em = data.confirmado_em; // usa o timestamp do servidor
+      }
+      Store.leituras.push(reg);
+      return reg;
+    },
+
+    async salvarFuncionario(dados){
+      const e = Auth.estabelecimento || {};
+      if (dados.id){
+        if (!MODO_MOCK){
+          await sb.from("colaboradores").update({
+            nome:dados.nome, cpf:dados.cpf, cargo:dados.cargo, papel:dados.papel, crf:dados.crf,
+            email:dados.email, telefone:dados.telefone, admissao:dados.admissao||null,
+          }).eq("id", dados.id).eq("estabelecimento_id", e.id);
+        }
+        const i = Store.colaboradores.findIndex(c => c.id === dados.id);
+        if (i >= 0) Store.colaboradores[i] = Object.assign({}, Store.colaboradores[i], dados);
+        return Store.colaboradores[i];
+      }
+      let novo = Object.assign({ ativo:true, estabelecimento_id:e.id }, dados);
+      if (!MODO_MOCK){
+        const { data } = await sb.from("colaboradores").insert({
+          estabelecimento_id:e.id, nome:dados.nome, cpf:dados.cpf, cargo:dados.cargo,
+          papel:dados.papel, crf:dados.crf, email:dados.email, telefone:dados.telefone,
+          admissao:dados.admissao||null, ativo:true,
+        }).select().single();
+        if (data) novo = mapColab(data);
+      } else {
+        novo.id = "colab-" + Date.now();
+      }
+      Store.colaboradores.push(novo);
       return novo;
     },
-    inativarFuncionario(id){
-      const c = MOCK.colaboradores.find(x => x.id === id);
-      if (c) c.ativo = false;
+
+    async inativarFuncionario(id){
+      const e = Auth.estabelecimento || {};
+      if (!MODO_MOCK) await sb.from("colaboradores").update({ ativo:false }).eq("id", id).eq("estabelecimento_id", e.id);
+      const c = Store.colaboradores.find(x => x.id === id); if (c) c.ativo = false;
     },
-    reativarFuncionario(id){
-      const c = MOCK.colaboradores.find(x => x.id === id);
-      if (c) c.ativo = true;
+    async reativarFuncionario(id){
+      const e = Auth.estabelecimento || {};
+      if (!MODO_MOCK) await sb.from("colaboradores").update({ ativo:true }).eq("id", id).eq("estabelecimento_id", e.id);
+      const c = Store.colaboradores.find(x => x.id === id); if (c) c.ativo = true;
     },
   };
 
@@ -786,18 +875,20 @@
         const u = MOCK.logins.find(x => x.email === email.trim().toLowerCase() && x.senha === senha);
         if (!u) return { erro:"E-mail ou senha incorretos." };
         this._carregarContexto(u.perfil_id);
+        await carregarDados();
         return {};
       }
       const { error } = await sb.auth.signInWithPassword({ email, password:senha });
       if (error) return { erro:error.message };
       await this._hidratarReal();
+      await carregarDados();
       return {};
     },
 
     async entrarComGoogle(){
-      if (MODO_MOCK){ this._carregarContexto("perfil-1"); return {}; }
+      if (MODO_MOCK){ this._carregarContexto("perfil-1"); await carregarDados(); return {}; }
       const { error } = await sb.auth.signInWithOAuth({
-        provider:"google", options:{ redirectTo:window.location.origin }
+        provider:"google", options:{ redirectTo:window.location.origin + window.location.pathname }
       });
       return error ? { erro:error.message } : {};
     },
@@ -805,7 +896,19 @@
     async _hidratarReal(){
       const { data:{ user } } = await sb.auth.getUser();
       if (!user) return;
-      const { data:p } = await sb.from("perfis").select("*").eq("user_id",user.id).single();
+      let { data:p } = await sb.from("perfis").select("*").eq("user_id",user.id).maybeSingle();
+      // Primeiro acesso: cria estabelecimento + perfil se ainda não existirem.
+      if (!p){
+        const { data:novoEstab } = await sb.from("estabelecimentos")
+          .insert({ user_id:user.id, nome:"Minha Farmácia", segmento:"farmacia" }).select().single();
+        const nome = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || "";
+        const { data:novoPerfil } = await sb.from("perfis").insert({
+          user_id:user.id, estabelecimento_id: novoEstab ? novoEstab.id : null,
+          nome, email:user.email, papel:"responsavel_tecnico",
+          iniciais: iniciaisDe(nome || user.email),
+        }).select().single();
+        p = novoPerfil;
+      }
       this.perfil = p;
       if (p){
         const { data:e } = await sb.from("estabelecimentos").select("*").eq("id",p.estabelecimento_id).single();
@@ -817,6 +920,16 @@
       if (!MODO_MOCK) await sb.auth.signOut();
       this.perfil = null; this.estabelecimento = null;
       render();
+    },
+
+    // Persiste alterações do estabelecimento (nome, cidade, uf).
+    async salvarEstabelecimento(dados){
+      Object.assign(this.estabelecimento, dados);
+      if (!MODO_MOCK){
+        await sb.from("estabelecimentos").update({
+          nome:dados.nome, cidade:dados.cidade, uf:dados.uf,
+        }).eq("id", this.estabelecimento.id);
+      }
     },
   };
 
@@ -1588,12 +1701,14 @@
       render();
     };
     const cfgSalvar = document.getElementById("cfg-salvar");
-    if (cfgSalvar) cfgSalvar.onclick = () => {
+    if (cfgSalvar) cfgSalvar.onclick = async () => {
       const e = Auth.estabelecimento;
       if (e){
-        e.nome = (document.getElementById("cfg-nome").value||"").trim() || e.nome;
-        e.cidade = (document.getElementById("cfg-cidade").value||"").trim();
-        e.uf = document.getElementById("cfg-uf").value;
+        await Auth.salvarEstabelecimento({
+          nome: (document.getElementById("cfg-nome").value||"").trim() || e.nome,
+          cidade: (document.getElementById("cfg-cidade").value||"").trim(),
+          uf: document.getElementById("cfg-uf").value,
+        });
       }
       App.configAberta = false;
       render();
@@ -1635,11 +1750,11 @@
 
     // usar modelo → cria POP e abre editor
     document.querySelectorAll("[data-modelo]").forEach(el => {
-      el.onclick = () => {
+      el.onclick = async () => {
         const e = Auth.estabelecimento || {};
         const m = DB.listarModelos(e.uf).find(x => x.id === el.getAttribute("data-modelo"));
         if (!m) return;
-        const pop = DB.criarPop({ nome:m.nome, categoria:m.categoria, origem:"modelo", conteudo:m.conteudo });
+        const pop = await DB.criarPop({ nome:m.nome, categoria:m.categoria, origem:"modelo", conteudo:m.conteudo });
         App.novoPop = null;
         App.popId = pop.id; App.tela = "pop"; App.abaPop = "documento";
         App.editando = true; App.rascunhoConteudo = pop.conteudo;
@@ -1649,11 +1764,11 @@
 
     // criar do zero
     const npCriar = document.getElementById("np-criar");
-    if (npCriar) npCriar.onclick = () => {
+    if (npCriar) npCriar.onclick = async () => {
       const nome = (document.getElementById("np-nome").value||"").trim();
       const cat = (document.getElementById("np-cat").value||"").trim() || "Geral";
       if (!nome){ App.novoErro = "Informe o nome do procedimento."; render(); return; }
-      const pop = DB.criarPop({ nome, categoria:cat, origem:"ia" });
+      const pop = await DB.criarPop({ nome, categoria:cat, origem:"ia" });
       App.novoPop = null;
       App.popId = pop.id; App.tela = "pop"; App.abaPop = "documento";
       App.editando = true; App.rascunhoConteudo = pop.conteudo;
@@ -1672,9 +1787,10 @@
     if (editor) editor.oninput = () => { App.rascunhoConteudo = editor.value; };
 
     const btnSalvarV = document.getElementById("btn-salvar-versao");
-    if (btnSalvarV) btnSalvarV.onclick = () => {
+    if (btnSalvarV) btnSalvarV.onclick = async () => {
       const nota = (document.getElementById("pop-nota").value||"").trim();
-      DB.salvarNovaVersao(App.popId, App.rascunhoConteudo, nota);
+      btnSalvarV.disabled = true;
+      await DB.salvarNovaVersao(App.popId, App.rascunhoConteudo, nota);
       App.editando = false; App._leu = false;
       render();
     };
@@ -1683,9 +1799,9 @@
 
     // ---- Aprovação / status ----
     const btnEnviarAp = document.getElementById("btn-enviar-aprovacao");
-    if (btnEnviarAp) btnEnviarAp.onclick = () => { DB.definirStatus(App.popId, "aprovacao"); render(); };
+    if (btnEnviarAp) btnEnviarAp.onclick = async () => { await DB.definirStatus(App.popId, "aprovacao"); render(); };
     const btnAprovar = document.getElementById("btn-aprovar");
-    if (btnAprovar) btnAprovar.onclick = () => { DB.definirStatus(App.popId, "vigente"); render(); };
+    if (btnAprovar) btnAprovar.onclick = async () => { await DB.definirStatus(App.popId, "vigente"); render(); };
 
     // Distribuir → tela de distribuição
     const btnDist = document.getElementById("btn-distribuir");
@@ -1744,10 +1860,10 @@
       el.onclick = () => { App.funcEdit = Object.assign({}, DB.getFuncionario(el.getAttribute("data-editfunc"))); App.funcErro = null; render(); };
     });
     document.querySelectorAll("[data-inativar]").forEach(el => {
-      el.onclick = () => { if (confirm("Inativar este funcionário? O histórico de leitura é preservado.")){ DB.inativarFuncionario(el.getAttribute("data-inativar")); render(); } };
+      el.onclick = async () => { if (confirm("Inativar este funcionário? O histórico de leitura é preservado.")){ await DB.inativarFuncionario(el.getAttribute("data-inativar")); render(); } };
     });
     document.querySelectorAll("[data-reativar]").forEach(el => {
-      el.onclick = () => { DB.reativarFuncionario(el.getAttribute("data-reativar")); render(); };
+      el.onclick = async () => { await DB.reativarFuncionario(el.getAttribute("data-reativar")); render(); };
     });
 
     // Formulário de funcionário
@@ -1764,7 +1880,7 @@
     if (inCpf) inCpf.oninput = () => { const pos = inCpf.selectionStart; inCpf.value = mascaraCpf(inCpf.value); };
 
     const btnSalvar = document.getElementById("func-salvar");
-    if (btnSalvar) btnSalvar.onclick = () => {
+    if (btnSalvar) btnSalvar.onclick = async () => {
       const get = (id) => (document.getElementById(id).value || "").trim();
       const dados = {
         nome: get("f-nome"), cpf: get("f-cpf"), cargo: get("f-cargo"),
@@ -1784,7 +1900,7 @@
       if (dup){ App.funcErro = "Já existe um funcionário com este CPF."; render(); return; }
 
       if (App.funcEdit && App.funcEdit.id) dados.id = App.funcEdit.id;
-      DB.salvarFuncionario(dados);
+      await DB.salvarFuncionario(dados);
       App.funcEdit = null; App.funcErro = null;
       render();
     };
@@ -1843,15 +1959,15 @@
     if (inCpf) inCpf.oninput = () => { inCpf.value = mascaraCpf(inCpf.value); App.colabCpf = inCpf.value; };
 
     const btnConfirmar = document.getElementById("colab-confirmar");
-    if (btnConfirmar) btnConfirmar.onclick = () => {
+    if (btnConfirmar) btnConfirmar.onclick = async () => {
       const cpf = App.colabCpf;
       const e = Auth.estabelecimento || {};
       if (!cpfValido(cpf)){ App.colabErro = "CPF inválido. Verifique os números."; render(); return; }
       const colab = DB.buscarColaboradorPorCpf(e.id, cpf);
       if (!colab){ App.colabErro = "CPF não encontrado. Confirme com o responsável técnico se você está cadastrado."; render(); return; }
       const p = App.colabPop;
-      const reg = DB.confirmarLeitura(p.id, p.versao_atual, colab);
-      // se já tinha lido, monta um registro informativo mesmo assim
+      btnConfirmar.disabled = true;
+      const reg = await DB.confirmarLeitura(p.id, p.versao_atual, colab);
       App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
       App.colabEtapa = "feito";
       render();
@@ -1910,15 +2026,45 @@
     setTimeout(() => { w.focus(); w.print(); }, 400);
   }
 
-  // Inicialização: no modo real, recupera sessão existente.
+  // Detecta se a URL é um link de leitura: #/ler/{estabId}/{popId}
+  function rotaLeitura(){
+    const h = (window.location.hash || "");
+    const m = h.match(/#\/ler\/([^/]+)\/([^/]+)/);
+    return m ? { estabId: m[1], popId: m[2] } : null;
+  }
+
+  // Inicialização.
   (async function init(){
     try {
       if (!MODO_MOCK && sb){
         const { data } = await sb.auth.getSession();
-        if (data && data.session) await Auth._hidratarReal();
+        if (data && data.session){ await Auth._hidratarReal(); await carregarDados(); }
+      }
+
+      // Link de leitura do colaborador (abre direto na visão pública).
+      const rota = rotaLeitura();
+      if (rota){
+        if (MODO_MOCK){
+          carregarDoMock();
+          Auth.estabelecimento = MOCK.estabelecimentos.find(e => e.id === rota.estabId) || MOCK.estabelecimentos[0];
+        } else {
+          // carrega o estabelecimento e o POP público (leitura liberada por RLS).
+          const { data:e } = await sb.from("estabelecimentos").select("*").eq("id", rota.estabId).maybeSingle();
+          if (e){
+            Auth.estabelecimento = e;
+            const { data:pops } = await sb.from("pops").select("*").eq("estabelecimento_id", rota.estabId);
+            const { data:colabs } = await sb.from("colaboradores").select("*").eq("estabelecimento_id", rota.estabId);
+            Store.pops = (pops||[]).map(mapPop);
+            Store.colaboradores = (colabs||[]).map(mapColab);
+          }
+        }
+        const pop = DB.getPop(rota.popId);
+        if (pop){
+          App.colabPop = pop; App.colabEtapa = "ler"; App.tela = "colaborador";
+        }
       }
     } catch (e) {
-      console.log("[DocFlow] erro ao inicializar sessão:", e && e.message);
+      console.log("[DocFlow] erro ao inicializar:", e && e.message);
     }
     render();
   })();
