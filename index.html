@@ -230,6 +230,10 @@
     .uf-banner.ok{background:var(--brand-soft);color:var(--brand-deep)}
     .uf-banner.soon{background:var(--amber-soft);color:var(--amber-deep)}
     .uf-banner svg{flex-shrink:0;margin-top:1px}
+    .model-sec{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;
+      color:var(--ink);text-transform:uppercase;letter-spacing:.04em;font-weight:600;
+      margin:22px 0 12px}
+    .model-sec svg{color:var(--brand)}
     @media (max-width:600px){ .opt-grid{grid-template-columns:1fr} .pop-editor{min-height:260px;font-size:13px} }
 
     /* leitura */
@@ -436,6 +440,20 @@
         conteudo:"## 1. Objetivo\nPadronizar a dispensação e a guarda de medicamentos e substâncias sujeitos a controle especial, conforme a Resolução SESA-PR nº 590/2014 (Art. 36) e a Portaria nº 344/1998.\n\n## 2. Guarda\nManter os medicamentos sob controle especial em sala fechada ou armário com chave, em área de circulação restrita (Art. 4º, XII, a).\n\n## 3. Dispensação (Art. 36, § único)\nNo momento da dispensação, realizar inspeção visual para verificar, no mínimo, a identificação do medicamento, o prazo de validade e a integridade da embalagem. É vedada a dispensação sem a devida prescrição de profissional habilitado (Art. 33, I). É vedada a dispensação de controlados solicitados por meio remoto (Art. 51, §2º).\n\n## 4. Escrituração\nTransmitir os dados de movimentação conforme a Portaria nº 344/1998 e o SNGPC (RDC nº 20/2011).\n\n## 5. Registros\nManter a documentação por no mínimo 5 anos (Art. 101)." },
       { id:"mod-8", nome:"Verificação e Calibração de Equipamentos e Instrumentos", categoria:"Atendimento", uf:"PR", base:"SESA-PR 590/2014, Art. 92; Art. 94; Art. 95",
         conteudo:"## 1. Objetivo\nEstabelecer a verificação diária, a calibração e a manutenção de equipamentos, instrumentos e aparelhos, conforme a Resolução SESA-PR nº 590/2014 (Art. 92 a 95).\n\n## 2. Verificação diária (Art. 94)\nA verificação/checagem diária deve ser feita por pessoal treinado e autorizado, antes do início das atividades, empregando procedimentos escritos aprovados pelo responsável técnico, mantendo-se os registros. Manter lista dos equipamentos que exigem verificação diária.\n\n## 3. Calibração (Art. 92)\nOs instrumentos de medição devem ser calibrados no mínimo uma vez ao ano, por laboratórios acreditados pelo INMETRO/CGCRE. Manter os certificados de calibração.\n\n## 4. Manutenção (Art. 95)\nInstituir Programa de Manutenção Periódica e Corretiva segundo instruções do fabricante, mantendo os registros.\n\n## 5. Registros\nManter os registros de manutenção e calibração por no mínimo 5 anos (Art. 101)." },
+      // Modelos genéricos — disponíveis em qualquer estado (uf:null), servem de ponto de partida
+      // enquanto não há curadoria específica do estado. São mais simples que os fundamentados.
+      { id:"mod-g1", nome:"Dispensação de Medicamentos Controlados", categoria:"Dispensação", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nEstabelecer o procedimento para dispensação de medicamentos sob controle especial.\n\n## 2. Responsabilidades\nDefinir os responsáveis pela conferência da receita e escrituração.\n\n## 3. Procedimento\nDescrever o passo a passo da dispensação: conferência da receita, verificação de validade e integridade, registro e retenção conforme exigência." },
+      { id:"mod-g2", nome:"Escrituração no SNGPC", categoria:"Controlados", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nPadronizar a escrituração de medicamentos controlados e antimicrobianos no SNGPC.\n\n## 2. Procedimento\nDescrever os lançamentos, a periodicidade de transmissão e a conferência dos balanços." },
+      { id:"mod-g3", nome:"Recebimento e Conferência de Mercadorias", categoria:"Logística", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nPadronizar o recebimento de mercadorias, assegurando integridade, validade e procedência.\n\n## 2. Procedimento\nConferir nota fiscal, embalagens, lotes e prazos de validade; registrar divergências; armazenar conforme as condições exigidas." },
+      { id:"mod-g4", nome:"Controle de Temperatura de Termolábeis", categoria:"Armazenamento", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nGarantir a manutenção da cadeia de frio de medicamentos termolábeis.\n\n## 2. Procedimento\nMonitorar a temperatura do refrigerador ao menos duas vezes ao dia, registrar em planilha e acionar o responsável em caso de desvio." },
+      { id:"mod-g5", nome:"Higienização de Superfícies", categoria:"Limpeza", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nEstabelecer a rotina de higienização de superfícies e bancadas do estabelecimento.\n\n## 2. Procedimento\nLimpar as superfícies no início e no fim do expediente com produto adequado, registrando a execução." },
+      { id:"mod-g6", nome:"Descarte de Medicamentos Vencidos", categoria:"Resíduos", uf:null, base:"Modelo genérico — adapte à norma do seu estado",
+        conteudo:"## 1. Objetivo\nDefinir a segregação e o descarte de medicamentos vencidos conforme o PGRSS.\n\n## 2. Procedimento\nSeparar os medicamentos vencidos, registrar quantidades e encaminhar para empresa licenciada de coleta." },
     ],
     leituras: [
       { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-1", leitor_nome:"Marcos Lima", leitor_cargo:"Farmacêutico", confirmado_em:"2026-07-22T09:14:00Z" },
@@ -556,10 +574,11 @@
     },
 
     listarModelos(uf){
-      // Retorna os modelos do estado informado (hoje só PR tem base curada).
-      if (!uf) return MOCK.modelos.slice();
-      return MOCK.modelos.filter(m => m.uf === uf);
+      // Genéricos (uf:null) aparecem sempre; os do estado, só se bater o uf.
+      return MOCK.modelos.filter(m => !m.uf || m.uf === uf);
     },
+    modelosDoEstado(uf){ return MOCK.modelos.filter(m => m.uf === uf); },
+    modelosGenericos(){ return MOCK.modelos.filter(m => !m.uf); },
     getLeituras(popId, versao){
       return MOCK.leituras
         .filter(l => l.pop_id === popId && l.versao_numero === versao)
@@ -1220,7 +1239,7 @@
       const uf = e.uf || "PR";
       const nomeUf = (UFS.find(u => u.uf === uf) || {}).nome || uf;
       const coberto = ufCoberto(uf);
-      const modelos = DB.listarModelos(uf).map(m => `
+      const cardModelo = (m) => `
         <div class="model-row">
           <div class="mi">${iconePop(m.categoria)}</div>
           <div class="mn">${escapeHtml(m.nome)}
@@ -1228,17 +1247,25 @@
             ${m.base?`<div class="model-base">${ic.shieldc} ${escapeHtml(m.base)}</div>`:""}
           </div>
           <button class="btn btn-primary" data-modelo="${m.id}">Usar ${ic.arrow}</button>
-        </div>`).join("");
-      const aviso = coberto
-        ? `<div class="uf-banner ok">${ic.shieldc} Modelos com base na regulamentação de <strong>${escapeHtml(nomeUf)}</strong>. Revise e adapte à realidade da sua farmácia antes de publicar.</div>`
-        : `<div class="uf-banner soon">${ic.warn} Ainda não temos modelos curados para <strong>${escapeHtml(nomeUf)}</strong>. Estamos ampliando a cobertura por estado. Você pode criar um POP do zero ou trocar o estado do estabelecimento nas configurações.</div>`;
+        </div>`;
+
+      const doEstado = DB.modelosDoEstado(uf).map(cardModelo).join("");
+      const genericos = DB.modelosGenericos().map(cardModelo).join("");
+
+      const secEstado = coberto ? `
+        <div class="uf-banner ok">${ic.shieldc} Modelos com base na regulamentação de <strong>${escapeHtml(nomeUf)}</strong>. Revise e adapte à realidade da sua farmácia antes de publicar.</div>
+        <div class="model-sec">${ic.template} Modelos do seu estado (${escapeHtml(uf)})</div>
+        ${doEstado}` : `
+        <div class="uf-banner soon">${ic.warn} Ainda não temos modelos curados para <strong>${escapeHtml(nomeUf)}</strong>. Use os modelos gerais abaixo como ponto de partida e adapte à norma local, ou troque o estado nas configurações.</div>`;
+
       return `
         <button class="back-link" id="novo-voltar">← Voltar</button>
         <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.template}</div>
           <div><h1 style="margin-top:0">Escolher modelo</h1>
           <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Parta de um POP pronto e adapte à sua farmácia.</p></div></div></div>
-        ${aviso}
-        ${modelos || '<p style="color:var(--ink-soft);padding:16px 0">Nenhum modelo disponível para este estado ainda.</p>'}`;
+        ${secEstado}
+        <div class="model-sec">${ic.doc2} Modelos gerais <span style="font-weight:400;color:var(--ink-soft);font-family:var(--sans);text-transform:none;letter-spacing:0">· servem para qualquer estado</span></div>
+        ${genericos}`;
     }
     if (modo === "branco"){
       return `
