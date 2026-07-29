@@ -2221,28 +2221,36 @@
 
     const btnSalvar = document.getElementById("func-salvar");
     if (btnSalvar) btnSalvar.onclick = async () => {
-      const get = (id) => (document.getElementById(id).value || "").trim();
+      const getEl = (id) => document.getElementById(id);
+      const get = (id) => { const el = getEl(id); return el ? (el.value || "").trim() : ""; };
       const dados = {
         nome: get("f-nome"), cpf: get("f-cpf"), cargo: get("f-cargo"),
-        papel: get("f-papel"), crf: get("f-crf"), email: get("f-email"),
+        papel: get("f-papel") || "leitor", crf: get("f-crf"), email: get("f-email"),
         telefone: get("f-tel"), admissao: get("f-adm"),
       };
-      // validações
-      if (!dados.nome){ App.funcErro = "Informe o nome completo."; render(); return; }
-      if (!cpfValido(dados.cpf)){ App.funcErro = "CPF inválido. Verifique os números."; render(); return; }
-      if (!dados.cargo){ App.funcErro = "Informe o cargo."; render(); return; }
-      if (!dados.email || !dados.email.includes("@")){ App.funcErro = "Informe um e-mail válido."; render(); return; }
-      if (!dados.telefone){ App.funcErro = "Informe o telefone."; render(); return; }
-      if (!dados.admissao){ App.funcErro = "Informe a data de admissão."; render(); return; }
-      // CPF duplicado
+      // VALIDAÇÃO PROVISÓRIA AFROUXADA — só nome e CPF (âncora do registro de leitura).
+      // Cargo, e-mail, telefone e admissão estão opcionais por ora.
+      if (!dados.nome){ App.funcErro = "Informe ao menos o nome."; render(); return; }
+      // Na EDIÇÃO, não revalida o CPF já salvo (ele já foi aceito no cadastro).
+      // Só valida se for cadastro novo, ou se o CPF foi alterado.
+      const editando = App.funcEdit && App.funcEdit.id;
+      const cpfMudou = !editando || (App.funcEdit && App.funcEdit.cpf !== dados.cpf);
+      if (!dados.cpf){ App.funcErro = "Informe o CPF — ele identifica quem leu cada POP."; render(); return; }
+      if (cpfMudou && !cpfValido(dados.cpf)){ App.funcErro = "CPF inválido. Verifique os números."; render(); return; }
+      // CPF duplicado (mantido: evita registro ambíguo)
       const e = Auth.estabelecimento || {};
       const dup = DB.listarFuncionarios(e.id, true).find(c => c.cpf === dados.cpf && c.id !== (App.funcEdit && App.funcEdit.id));
       if (dup){ App.funcErro = "Já existe um funcionário com este CPF."; render(); return; }
 
       if (App.funcEdit && App.funcEdit.id) dados.id = App.funcEdit.id;
-      await DB.salvarFuncionario(dados);
-      App.funcEdit = null; App.funcErro = null;
-      render();
+      try {
+        await DB.salvarFuncionario(dados);
+        App.funcEdit = null; App.funcErro = null;
+        render();
+      } catch(err){
+        App.funcErro = "Não foi possível salvar: " + (err && err.message ? err.message : "erro desconhecido");
+        render();
+      }
     };
   }
 
