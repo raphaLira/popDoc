@@ -3,27 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#083F3C" />
+  <meta name="theme-color" content="#160A33" />
   <title>DocFlow AI — Gestão de POPs</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     /* ============================================================
        DocFlow AI — estilos
        Identidade clínica: verde de saúde pública, tipografia técnica.
     ============================================================ */
     :root{
-      --bg:#F2F5F4; --panel:#FFFFFF; --ink:#0F2A2E; --ink-soft:#456A6E;
-      --line:#DCE6E4; --brand:#0B5E5A; --brand-deep:#083F3C; --brand-soft:#E4F0EE;
-      --amber:#B5701A; --amber-soft:#FBEEDA; --green:#2E7D4F; --green-soft:#E2F1E7;
-      --red:#B3402F; --red-soft:#F6E4E0;
-      --sans:'IBM Plex Sans',system-ui,sans-serif;
-      --mono:'IBM Plex Mono',ui-monospace,monospace;
+      --bg:#F4F2FB; --panel:#FFFFFF; --ink:#1B1430; --ink-soft:#6E6584;
+      --line:#E6E0F4; --brand:#6C3BF5; --brand-deep:#241052; --brand-noite:#160A33;
+      --brand-soft:#EFEAFD; --amber:#F5A623; --amber-soft:#FDF0D8; --amber-deep:#E8870A;
+      --green:#00A878; --green-soft:#E0F5EE;
+      --red:#E5484D; --red-soft:#FCE9EA;
+      --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+      --display:'Unbounded','Plus Jakarta Sans',sans-serif;
+      --mono:'DM Mono',ui-monospace,monospace;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+    body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    .content, .pop-card, .team-card{min-width:0}
+    .pop-card .nome, .team-card .nome, .pop-card .sub, .team-card .sub{overflow-wrap:anywhere}
     button{font-family:inherit;cursor:pointer}
     input{font-family:inherit}
     a{color:var(--brand);text-decoration:none}
@@ -33,16 +37,16 @@
 
     /* ---- Login ---- */
     .login-wrap{min-height:100vh;display:flex}
-    .login-brand{flex:1;background:var(--brand-deep);padding:48px 44px;display:flex;
+    .login-brand{flex:1;background:linear-gradient(170deg,var(--brand-noite) 0%,var(--brand-deep) 60%,#3A1A85 100%);padding:48px 44px;display:flex;
       flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
-    .login-brand h1{color:#fff;font-size:32px;font-weight:700;line-height:1.2;margin-bottom:16px;max-width:420px}
-    .login-brand p{color:#B6D8D3;font-size:15px;line-height:1.6;max-width:420px}
+    .login-brand h1{color:#fff;font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin-bottom:16px;max-width:420px}
+    .login-brand p{color:#CBBEF0;font-size:15px;line-height:1.6;max-width:420px}
     .brand-logo{display:flex;align-items:center;gap:12px}
-    .brand-logo .mark{width:38px;height:38px;border-radius:10px;background:#0E7A73;display:grid;place-items:center}
-    .brand-logo .name{color:#fff;font-size:19px;font-weight:700;line-height:1}
-    .brand-logo .name span{color:#6FC7BC}
-    .brand-logo .sub{font-family:var(--mono);font-size:9px;color:#5E8A85;letter-spacing:.12em;margin-top:4px}
-    .brand-foot{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:#5E8A85}
+    .brand-logo .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#8B5CFF,#6C3BF5);display:grid;place-items:center}
+    .brand-logo .name{color:#fff;font-family:var(--display);font-size:18px;font-weight:700;line-height:1}
+    .brand-logo .name span{color:#C9B6FF}
+    .brand-logo .sub{font-family:var(--mono);font-size:9px;color:#9B8FC7;letter-spacing:.12em;margin-top:4px}
+    .brand-foot{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:#9B8FC7}
     .circle{position:absolute;border-radius:999px;border:1px solid rgba(255,255,255,.05)}
 
     .login-form-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 24px}
@@ -51,12 +55,14 @@
     .logo-mobile .mark{width:32px;height:32px;border-radius:8px;background:var(--brand);display:grid;place-items:center}
     .logo-mobile .name{font-size:17px;font-weight:700}
     .logo-mobile .name span{color:var(--brand)}
-    .login-card h2{font-size:24px;font-weight:700;margin-bottom:6px}
+    .login-card h2{font-family:var(--display);font-size:23px;font-weight:700;margin-bottom:6px}
     .login-card .lead{font-size:14px;color:var(--ink-soft);margin-bottom:28px}
 
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;
       font-size:14px;font-weight:600;padding:12px 16px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
-    .btn-primary{background:var(--brand);color:#fff;border:none;font-size:15px;padding:13px 16px}
+    .btn-primary{background:linear-gradient(135deg,#7C4DFF,#6C3BF5);color:#fff;border:none;font-size:15px;
+      padding:13px 16px;box-shadow:0 4px 14px rgba(108,59,245,.32)}
+    .btn-primary:hover{background:linear-gradient(135deg,#6C3BF5,#5730C9)}
     .btn-block{width:100%}
     .btn:disabled{opacity:.65;cursor:default}
 
@@ -77,29 +83,29 @@
 
     /* ---- App shell ---- */
     .app{min-height:100vh;display:flex;flex-direction:column}
-    .topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--brand-deep)}
-    .topbar .mark{width:30px;height:30px;border-radius:8px;background:#0E7A73;display:grid;place-items:center}
-    .topbar .name{color:#fff;font-size:16px;font-weight:700}
-    .topbar .name span{color:#6FC7BC}
-    .topbar .estab{margin-left:auto;font-family:var(--mono);font-size:11px;color:#8FD4C9;text-align:right}
-    .btn-logout{background:transparent;border:1px solid rgba(255,255,255,.2);color:#DCEEEB;border-radius:8px;
+    .topbar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:linear-gradient(120deg,var(--brand-noite),var(--brand-deep))}
+    .topbar .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#8B5CFF,#6C3BF5);display:grid;place-items:center}
+    .topbar .name{color:#fff;font-family:var(--display);font-size:15px;font-weight:700}
+    .topbar .name span{color:#C9B6FF}
+    .topbar .estab{margin-left:auto;font-family:var(--mono);font-size:11px;color:#C9B6FF;text-align:right}
+    .btn-logout{background:transparent;border:1px solid rgba(255,255,255,.2);color:#E8E0FA;border-radius:8px;
       padding:7px 12px;font-size:13px;display:flex;align-items:center;gap:6px;margin-left:16px}
 
     .body{flex:1;display:flex}
 
     /* sidebar (desktop) */
-    .sidebar{width:230px;background:var(--brand-deep);padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+    .sidebar{width:230px;background:linear-gradient(180deg,var(--brand-deep),var(--brand-noite));padding:18px 14px;display:flex;flex-direction:column;gap:4px}
     .nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:10px 13px;border-radius:8px;border:none;
-      background:transparent;color:#CBDAD7;font-size:14px;font-weight:500;text-align:left}
+      background:transparent;color:#C9BEE8;font-size:14px;font-weight:500;text-align:left}
     .nav-item.active{background:var(--brand-soft);color:var(--brand-deep);font-weight:600}
     .nav-item .badge{margin-left:auto;background:var(--amber);color:#fff;font-family:var(--mono);font-size:10px;
       font-weight:700;padding:1px 6px;border-radius:99px}
     .sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
     .user-chip{display:flex;align-items:center;gap:10px;padding:10px 13px}
-    .user-chip .av{width:30px;height:30px;border-radius:99px;background:#0E7A73;display:grid;place-items:center;
+    .user-chip .av{width:30px;height:30px;border-radius:99px;background:linear-gradient(135deg,#8B5CFF,#6C3BF5);display:grid;place-items:center;
       color:#fff;font-family:var(--mono);font-size:12px;font-weight:700}
     .user-chip .nm{font-size:12px;font-weight:600;color:#fff}
-    .user-chip .rl{font-family:var(--mono);font-size:10px;color:#5E8A85}
+    .user-chip .rl{font-family:var(--mono);font-size:10px;color:#9B8FC7}
 
     .content{flex:1;max-width:960px;margin:0 auto;width:100%;padding:28px 32px}
 
@@ -114,37 +120,47 @@
 
     /* ---- Biblioteca ---- */
     .page-head{margin-bottom:22px}
+    .page-head-row{display:flex;align-items:center;gap:13px}
+    .page-icon{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#7C4DFF,#6C3BF5);
+      display:grid;place-items:center;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(108,59,245,.3)}
+    .page-icon.amber{background:linear-gradient(135deg,#F7B733,#F5A623);box-shadow:0 6px 16px rgba(245,166,35,.32)}
     .page-head .eyebrow{font-family:var(--mono);font-size:12px;color:var(--ink-soft);letter-spacing:.08em;
       text-transform:uppercase}
-    .page-head h1{font-size:26px;font-weight:700;margin-top:6px}
+    .page-head h1{font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.01em;margin-top:6px}
     .toolbar{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
     .search{position:relative;flex:1;min-width:200px}
-    .search svg{position:absolute;left:11px;top:11px;color:var(--ink-soft)}
-    .search input{width:100%;padding:10px 12px 10px 34px;border-radius:9px;border:1px solid var(--line);
-      font-size:14px;color:var(--ink);background:var(--panel)}
+    .search svg{position:absolute;left:13px;top:12px;color:var(--brand)}
+    .search input{width:100%;padding:11px 12px 11px 38px;border-radius:11px;border:1px solid var(--line);
+      font-size:14px;color:var(--ink);background:var(--panel);transition:border-color .15s,box-shadow .15s}
     .search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
 
-    .pop-list{display:grid;gap:10px}
-    .pop-card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;background:var(--panel);
-      border:1px solid var(--line);border-radius:11px;padding:15px 17px;text-align:left;border-left-width:1px;width:100%}
-    .pop-card.alerta{border-left:3px solid var(--amber)}
-    .pop-card .meta-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+    .pop-list{display:grid;gap:11px}
+    .pop-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;background:var(--panel);
+      border:1px solid var(--line);border-radius:14px;padding:15px 17px;text-align:left;width:100%;
+      transition:transform .12s,box-shadow .12s,border-color .12s;box-shadow:0 1px 2px rgba(27,20,48,.03)}
+    .pop-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,20,48,.09);border-color:#D9CFF0}
+    .pop-card:active{transform:translateY(0)}
+    .pop-ico{width:42px;height:42px;border-radius:11px;background:var(--brand-soft);display:grid;place-items:center;
+      color:var(--brand);flex-shrink:0}
+    .pop-card.alerta .pop-ico{background:var(--amber-soft);color:var(--amber-deep)}
+    .pop-card .meta-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
     .pop-card .pid{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
-    .pop-card .nome{font-size:16px;font-weight:600}
-    .pop-card .meta-bot{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap}
-    .pop-card .sub{font-size:13px;color:var(--ink-soft)}
+    .pop-card .nome{font-size:15px;font-weight:700;line-height:1.3}
+    .pop-card .meta-bot{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+    .pop-card .sub{font-size:12.5px;color:var(--ink-soft)}
     .pop-card .leram{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
     .pop-card .leram.full{color:var(--green)}
-    .chev{color:var(--ink-soft)}
+    .chev{color:var(--brand);opacity:.5;flex-shrink:0}
+    .pop-card:hover .chev{opacity:1}
 
     .badge-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;
-      letter-spacing:.02em;text-transform:uppercase;padding:3px 8px;border-radius:4px;font-weight:600}
+      letter-spacing:.02em;text-transform:uppercase;padding:3px 8px;border-radius:5px;font-weight:600}
     .b-vigente{background:var(--green-soft);color:var(--green)}
-    .b-revisar{background:var(--amber-soft);color:var(--amber)}
-    .b-rascunho{background:#EEF1F0;color:var(--ink-soft)}
-    .b-aprovacao{background:#EAF0FA;color:#3A6FB0}
+    .b-revisar{background:var(--amber-soft);color:var(--amber-deep)}
+    .b-rascunho{background:#EEEBF6;color:var(--ink-soft)}
+    .b-aprovacao{background:#E8EEFC;color:#3A6FB0}
     .b-alto{background:var(--red-soft);color:var(--red)}
-    .b-medio{background:var(--amber-soft);color:var(--amber)}
+    .b-medio{background:var(--amber-soft);color:var(--amber-deep)}
 
     .welcome{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px}
     .welcome h1{font-size:22px;margin-bottom:8px}
@@ -167,6 +183,46 @@
     .doc-sec{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
     .doc-card p{font-size:14px;line-height:1.7;margin-bottom:16px}
     .doc-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+    /* editor */
+    .editor-hint{font-size:12px;color:var(--ink-soft);background:var(--brand-soft);border-radius:9px;
+      padding:10px 13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .pop-editor{width:100%;min-height:340px;padding:18px;border-radius:12px;border:1px solid var(--line);
+      font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--ink);background:var(--panel);
+      resize:vertical}
+    .pop-editor:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+    /* timeline de versões */
+    .ver-timeline{position:relative;padding-left:26px}
+    .ver-timeline::before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--line)}
+    .ver-item{position:relative;margin-bottom:16px}
+    .ver-dot{position:absolute;left:-26px;top:5px;width:14px;height:14px;border-radius:99px;
+      background:var(--panel);border:2px solid var(--line)}
+    .ver-dot.atual{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+    .ver-body{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 16px}
+    .ver-head{display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap}
+    .ver-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--brand)}
+    .ver-data{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+    .ver-nota{font-size:14px;margin-bottom:5px}
+    .ver-autor{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
+
+    /* Novo POP — cartões de opção */
+    .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+    .opt-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:left;
+      cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+    .opt-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,20,48,.09);border-color:var(--brand)}
+    .opt-card .oi{width:48px;height:48px;border-radius:13px;background:var(--brand-soft);color:var(--brand);
+      display:grid;place-items:center;margin-bottom:14px}
+    .opt-card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+    .opt-card p{font-size:13px;color:var(--ink-soft);line-height:1.5}
+    .opt-card.soon{opacity:.55}
+    .opt-card.soon:hover{transform:none;box-shadow:none;border-color:var(--line);cursor:default}
+    .model-row{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+      border-radius:11px;padding:13px 15px;margin-bottom:9px}
+    .model-row .mi{width:36px;height:36px;border-radius:9px;background:var(--brand-soft);color:var(--brand);
+      display:grid;place-items:center;flex-shrink:0}
+    .model-row .mn{flex:1;font-size:14px;font-weight:600}
+    @media (max-width:600px){ .opt-grid{grid-template-columns:1fr} .pop-editor{min-height:260px;font-size:13px} }
 
     /* leitura */
     .stat-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
@@ -232,15 +288,48 @@
     @media (max-width:520px){ .form-grid{grid-template-columns:1fr} }
 
     /* ---- responsivo ---- */
-    @media (max-width:820px){
+    /* Tablet e abaixo: troca sidebar por barra inferior */
+    @media (max-width:900px){
       .login-brand{display:none}
       .logo-mobile{display:flex}
       .topbar .estab{display:none}
-      .content{padding:20px 16px}
       .sidebar{display:none}
       .tabbar{display:flex}
       .body{padding-bottom:0}
+      .content{padding:22px 20px;max-width:100%}
       .planos-grid{grid-template-columns:1fr !important}
+    }
+    /* Celular: ajustes de espaçamento e toque */
+    @media (max-width:600px){
+      .content{padding:18px 14px}
+      .topbar{padding:12px 16px}
+      .page-icon{width:40px;height:40px;border-radius:11px}
+      .page-head h1{font-size:21px}
+      .toolbar{gap:9px}
+      .search{min-width:0;flex:1 1 100%}
+      .toolbar .btn-primary{flex:1 1 100%;justify-content:center}
+      .pop-card{padding:13px 14px;gap:11px}
+      .pop-ico{width:38px;height:38px}
+      .pop-card .nome{font-size:14.5px}
+      .team-card{grid-template-columns:auto 1fr;gap:12px}
+      .team-card .acts{grid-column:2;justify-self:end;margin-top:4px}
+      .modal{padding:20px;border-radius:14px;margin-top:8px}
+      .modal-bg{padding:12px 10px}
+      .stat-row{gap:9px}
+      .stat{min-width:0;flex:1 1 calc(50% - 5px);padding:13px 14px}
+      .stat .num{font-size:24px}
+      .doc-card{padding:18px}
+      .doc-actions{gap:8px}
+      .doc-actions .btn{flex:1 1 100%;justify-content:center}
+    }
+    /* Telas muito estreitas: nada pode vazar */
+    @media (max-width:380px){
+      .page-head-row{gap:10px}
+      .page-icon{width:36px;height:36px}
+      .page-head h1{font-size:19px}
+      .team-card .nome{font-size:14px}
+      .tab .lbl{font-size:9px}
+      .btn,.btn-primary{font-size:13px;padding:11px 12px}
     }
   </style>
 </head>
@@ -258,8 +347,8 @@
 
   // ---- Config Supabase (deixe vazio para MODO MOCK) ----------------
   // Quando preencher, o app passa a usar o banco real automaticamente.
-  const SUPABASE_URL = "https://gkwyziimbcpuvrejwrmj.supabase.co";       // ex: https://xxxx.supabase.co
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrd3l6aWltYmNwdXZyZWp3cm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDQ5NzcsImV4cCI6MjEwMDgyMDk3N30.svPSJo3lojzWjmrdJQXziE39gIc5eSoBbgsa_gEwO2Q";  // ex: eyJ...
+  const SUPABASE_URL = "";       // ex: https://xxxx.supabase.co
+  const SUPABASE_ANON_KEY = "";  // ex: eyJ...
 
   const MODO_MOCK = !SUPABASE_URL || !SUPABASE_ANON_KEY;
   let sb = null;
@@ -298,12 +387,35 @@
       { id:"colab-7", estabelecimento_id:"estab-1", nome:"Sônia Reis", cpf:"789.012.345-67", cargo:"Auxiliar", papel:"leitor", crf:"", email:"sonia@farmaciavida.com.br", telefone:"(11) 98888-7777", admissao:"2024-09-30", ativo:false },
     ],
     pops: [
-      { id:"POP-001", estabelecimento_id:"estab-1", nome:"Dispensação de Medicamentos Controlados", categoria:"Dispensação", status:"vigente", origem:"modelo", versao_atual:4, leitura_obrigatoria:true, atualizado_em:"2026-07-12" },
-      { id:"POP-002", estabelecimento_id:"estab-1", nome:"Recebimento e Conferência de Mercadorias", categoria:"Logística", status:"vigente", origem:"modelo", versao_atual:2, leitura_obrigatoria:true, atualizado_em:"2026-06-28" },
-      { id:"POP-003", estabelecimento_id:"estab-1", nome:"Controle de Temperatura de Termolábeis", categoria:"Armazenamento", status:"revisar", origem:"importado", versao_atual:3, leitura_obrigatoria:true, atualizado_em:"2026-03-02" },
-      { id:"POP-004", estabelecimento_id:"estab-1", nome:"Higienização de Superfícies e Bancadas", categoria:"Limpeza", status:"vigente", origem:"modelo", versao_atual:1, leitura_obrigatoria:false, atualizado_em:"2026-07-15" },
-      { id:"POP-005", estabelecimento_id:"estab-1", nome:"Descarte de Medicamentos Vencidos", categoria:"Resíduos", status:"rascunho", origem:"ia", versao_atual:2, leitura_obrigatoria:false, atualizado_em:"2026-07-20" },
-      { id:"POP-006", estabelecimento_id:"estab-1", nome:"Atendimento Farmacêutico e Orientação", categoria:"Atendimento", status:"vigente", origem:"modelo", versao_atual:5, leitura_obrigatoria:true, atualizado_em:"2026-07-09" },
+      { id:"POP-001", estabelecimento_id:"estab-1", nome:"Dispensação de Medicamentos Controlados", categoria:"Dispensação", status:"vigente", origem:"modelo", versao_atual:4, leitura_obrigatoria:true, atualizado_em:"2026-07-12",
+        conteudo:"## 1. Objetivo\nEstabelecer o procedimento para dispensação de medicamentos sujeitos a controle especial, garantindo a rastreabilidade e a conformidade com a legislação sanitária vigente.\n\n## 2. Responsabilidades\nO farmacêutico responsável técnico é encarregado da conferência da receita, escrituração no SNGPC e orientação ao paciente. O balconista auxilia na organização e no atendimento inicial.\n\n## 3. Procedimento\nReceber a receita, verificar a validade e a numeração, conferir os dados do prescritor e do paciente, separar o medicamento, registrar a saída no SNGPC e reter a via conforme exigência legal." },
+      { id:"POP-002", estabelecimento_id:"estab-1", nome:"Recebimento e Conferência de Mercadorias", categoria:"Logística", status:"vigente", origem:"modelo", versao_atual:2, leitura_obrigatoria:true, atualizado_em:"2026-06-28",
+        conteudo:"## 1. Objetivo\nPadronizar o recebimento e a conferência de mercadorias, assegurando integridade, validade e procedência dos produtos.\n\n## 2. Procedimento\nConferir a nota fiscal, verificar embalagens, lotes e prazos de validade, registrar divergências e armazenar conforme as condições exigidas." },
+      { id:"POP-003", estabelecimento_id:"estab-1", nome:"Controle de Temperatura de Termolábeis", categoria:"Armazenamento", status:"revisar", origem:"importado", versao_atual:3, leitura_obrigatoria:true, atualizado_em:"2026-03-02",
+        conteudo:"## 1. Objetivo\nGarantir a manutenção da cadeia de frio de medicamentos termolábeis, conforme a RDC vigente.\n\n## 2. Procedimento\nMonitorar a temperatura do refrigerador duas vezes ao dia, registrar em planilha, e acionar o responsável em caso de desvio." },
+      { id:"POP-004", estabelecimento_id:"estab-1", nome:"Higienização de Superfícies e Bancadas", categoria:"Limpeza", status:"vigente", origem:"modelo", versao_atual:1, leitura_obrigatoria:false, atualizado_em:"2026-07-15",
+        conteudo:"## 1. Objetivo\nEstabelecer a rotina de higienização de superfícies e bancadas do estabelecimento.\n\n## 2. Procedimento\nLimpar as superfícies no início e no fim do expediente com produto adequado, registrando a execução." },
+      { id:"POP-005", estabelecimento_id:"estab-1", nome:"Descarte de Medicamentos Vencidos", categoria:"Resíduos", status:"rascunho", origem:"ia", versao_atual:2, leitura_obrigatoria:false, atualizado_em:"2026-07-20",
+        conteudo:"## 1. Objetivo\nDefinir o procedimento de segregação e descarte de medicamentos vencidos conforme o PGRSS.\n\n## 2. Procedimento\nSeparar os medicamentos vencidos, registrar quantidades e encaminhar para empresa licenciada de coleta." },
+      { id:"POP-006", estabelecimento_id:"estab-1", nome:"Atendimento Farmacêutico e Orientação", categoria:"Atendimento", status:"vigente", origem:"modelo", versao_atual:5, leitura_obrigatoria:true, atualizado_em:"2026-07-09",
+        conteudo:"## 1. Objetivo\nOrientar o atendimento farmacêutico ao paciente, promovendo o uso racional de medicamentos.\n\n## 2. Procedimento\nAcolher o paciente, ouvir a necessidade, orientar sobre posologia e interações, e registrar o atendimento quando aplicável." },
+    ],
+    versoes: [
+      { pop_id:"POP-001", numero:4, autor_nome:"Dra. Helena Costa", nota:"Ajuste no fluxo de escrituração conforme SNGPC", vigente:true, criado_em:"2026-07-12T14:30:00Z" },
+      { pop_id:"POP-001", numero:3, autor_nome:"Dra. Helena Costa", nota:"Inclusão de dupla conferência de receita", vigente:false, criado_em:"2026-05-04T10:00:00Z" },
+      { pop_id:"POP-001", numero:2, autor_nome:"Marcos Lima", nota:"Revisão de redação e padronização de termos", vigente:false, criado_em:"2026-02-18T09:00:00Z" },
+      { pop_id:"POP-001", numero:1, autor_nome:"Dra. Helena Costa", nota:"Criação inicial do documento", vigente:false, criado_em:"2026-01-10T09:00:00Z" },
+      { pop_id:"POP-002", numero:2, autor_nome:"Dra. Helena Costa", nota:"Atualização do fluxo de conferência", vigente:true, criado_em:"2026-06-28T10:00:00Z" },
+      { pop_id:"POP-002", numero:1, autor_nome:"Dra. Helena Costa", nota:"Criação inicial", vigente:false, criado_em:"2026-01-12T09:00:00Z" },
+      { pop_id:"POP-003", numero:3, autor_nome:"Marcos Lima", nota:"Ajuste de frequência de medição", vigente:true, criado_em:"2026-03-02T11:00:00Z" },
+    ],
+    modelos: [
+      { id:"mod-1", nome:"Dispensação de Medicamentos Controlados", categoria:"Dispensação", conteudo:"## 1. Objetivo\nEstabelecer o procedimento para dispensação de medicamentos sob controle especial.\n\n## 2. Responsabilidades\nDefinir os responsáveis pela conferência e escrituração.\n\n## 3. Procedimento\nDescrever o passo a passo da dispensação." },
+      { id:"mod-2", nome:"Escrituração no SNGPC", categoria:"Controlados", conteudo:"## 1. Objetivo\nPadronizar a escrituração no SNGPC.\n\n## 2. Procedimento\nDescrever os lançamentos e a periodicidade." },
+      { id:"mod-3", nome:"Recebimento e Conferência de Mercadorias", categoria:"Logística", conteudo:"## 1. Objetivo\nPadronizar o recebimento de mercadorias.\n\n## 2. Procedimento\nConferência de nota, lotes e validades." },
+      { id:"mod-4", nome:"Controle de Temperatura de Termolábeis", categoria:"Armazenamento", conteudo:"## 1. Objetivo\nGarantir a cadeia de frio.\n\n## 2. Procedimento\nMonitoramento e registro de temperatura." },
+      { id:"mod-5", nome:"Higienização de Superfícies", categoria:"Limpeza", conteudo:"## 1. Objetivo\nEstabelecer a rotina de higienização.\n\n## 2. Procedimento\nDescrever a limpeza e o registro." },
+      { id:"mod-6", nome:"Descarte de Medicamentos Vencidos", categoria:"Resíduos", conteudo:"## 1. Objetivo\nDefinir o descarte conforme PGRSS.\n\n## 2. Procedimento\nSegregação e encaminhamento para coleta licenciada." },
     ],
     leituras: [
       { pop_id:"POP-001", versao_numero:4, colaborador_id:"colab-1", leitor_nome:"Marcos Lima", leitor_cargo:"Farmacêutico", confirmado_em:"2026-07-22T09:14:00Z" },
@@ -359,6 +471,56 @@
         });
     },
     getPop(popId){ return MOCK.pops.find(p => p.id === popId) || null; },
+
+    // Histórico de versões do POP (mais recente primeiro).
+    getVersoes(popId){
+      return MOCK.versoes
+        .filter(v => v.pop_id === popId)
+        .slice().sort((a,b) => b.numero - a.numero);
+    },
+
+    // Cria um POP novo (de modelo, importado ou em branco).
+    criarPop(dados){
+      const e = Auth.estabelecimento || {};
+      // gera id sequencial POP-00X
+      const nums = MOCK.pops.map(p => parseInt((p.id.split("-")[1]||"0"),10)).filter(n=>!isNaN(n));
+      const prox = (nums.length ? Math.max.apply(null,nums) : 0) + 1;
+      const id = "POP-" + String(prox).padStart(3,"0");
+      const hoje = new Date().toISOString().slice(0,10);
+      const pop = {
+        id, estabelecimento_id: e.id, nome: dados.nome, categoria: dados.categoria||"Geral",
+        status: "rascunho", origem: dados.origem||"modelo", versao_atual: 1,
+        leitura_obrigatoria: false, atualizado_em: hoje, conteudo: dados.conteudo||"## 1. Objetivo\n\n\n## 2. Procedimento\n",
+      };
+      MOCK.pops.push(pop);
+      MOCK.versoes.push({ pop_id:id, numero:1, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"", nota:"Criação inicial do documento", vigente:true, criado_em:new Date().toISOString() });
+      return pop;
+    },
+
+    // Salva edição do conteúdo → gera nova versão.
+    salvarNovaVersao(popId, conteudo, nota){
+      const pop = MOCK.pops.find(p => p.id === popId);
+      if (!pop) return null;
+      const nova = pop.versao_atual + 1;
+      // marca versões antigas como não-vigentes
+      MOCK.versoes.filter(v => v.pop_id === popId).forEach(v => v.vigente = false);
+      MOCK.versoes.push({ pop_id:popId, numero:nova, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"", nota:nota||"Edição do documento", vigente:true, criado_em:new Date().toISOString() });
+      pop.conteudo = conteudo;
+      pop.versao_atual = nova;
+      pop.atualizado_em = new Date().toISOString().slice(0,10);
+      // ao mudar o conteúdo, se estava vigente volta a rascunho até reaprovar
+      if (pop.status === "vigente") pop.status = "rascunho";
+      return pop;
+    },
+
+    // Muda status (enviar para aprovação / aprovar-publicar).
+    definirStatus(popId, status){
+      const pop = MOCK.pops.find(p => p.id === popId);
+      if (pop){ pop.status = status; pop.atualizado_em = new Date().toISOString().slice(0,10); }
+      return pop;
+    },
+
+    listarModelos(){ return MOCK.modelos.slice(); },
     getLeituras(popId, versao){
       return MOCK.leituras
         .filter(l => l.pop_id === popId && l.versao_numero === versao)
@@ -440,22 +602,41 @@
     return s.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   }
 
+  // Render simples do conteúdo: "## Título" vira seção, resto vira parágrafo.
+  function renderConteudo(texto){
+    const linhas = String(texto||"").split("\n");
+    let html = "", buffer = [];
+    const flush = () => { if (buffer.length){ html += `<p>${escapeHtml(buffer.join(" ")).trim()}</p>`; buffer=[]; } };
+    linhas.forEach(ln => {
+      const t = ln.trim();
+      if (t.startsWith("## ")){ flush(); html += `<div class="doc-sec">${escapeHtml(t.slice(3))}</div>`; }
+      else if (t === ""){ flush(); }
+      else buffer.push(t);
+    });
+    flush();
+    return html || '<p style="color:var(--ink-soft)">Documento em branco.</p>';
+  }
+
   /* ============================================================
      ESTADO DE NAVEGAÇÃO
   ============================================================ */
   const App = {
-    tela: "biblioteca",   // biblioteca | pop | alertas | planos | equipe
+    tela: "biblioteca",   // biblioteca | pop | alertas | planos | equipe | novopop
     popId: null,          // POP aberto
-    abaPop: "documento",  // documento | leitura
+    abaPop: "documento",  // documento | leitura | historico
     busca: "",
     funcEdit: null,       // funcionário em edição (null = ninguém; {} = novo)
     funcErro: null,       // mensagem de erro do formulário
     mostrarInativos: false,
+    editando: false,      // true quando o editor de POP está aberto
+    rascunhoConteudo: "", // buffer do editor
+    novoPop: null,        // {} durante criação de POP
+    novoErro: null,
   };
   function irPara(tela, popId){
     App.tela = tela;
     if (popId !== undefined) App.popId = popId;
-    if (tela === "pop") App.abaPop = "documento";
+    if (tela === "pop"){ App.abaPop = "documento"; App.editando = false; }
     render();
   }
 
@@ -541,6 +722,18 @@
     edit:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>',
     phone:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>',
     x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    pill:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>',
+    thermo:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>',
+    box:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+    spray:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h.01"/><path d="M7 5h.01"/><path d="M11 7h.01"/><path d="M3 7h.01"/><path d="M7 9h.01"/><path d="M3 11h.01"/><rect x="15" y="5" width="4" height="4"/><path d="M17 9v10a2 2 0 0 1-2 2H9"/></svg>',
+    trash:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    chat:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+    doc2:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    history:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>',
+    user2:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    template:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>',
+    upload:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    blank:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
   };
 
   /* ============================================================
@@ -597,6 +790,16 @@
           </div>
         </main>
       </div>`;
+  }
+
+  // Ícone por categoria de POP.
+  function iconePop(categoria){
+    const map = {
+      "Dispensação": ic.pill, "Controlados": ic.pill,
+      "Armazenamento": ic.thermo, "Logística": ic.box,
+      "Limpeza": ic.spray, "Resíduos": ic.trash, "Atendimento": ic.chat,
+    };
+    return map[categoria] || ic.doc2;
   }
 
   // ---- Badge de status ----
@@ -664,6 +867,7 @@
 
     const cards = pops.map(p => `
       <button class="pop-card ${p.alerta?"alerta":""}" data-pop="${p.id}">
+        <div class="pop-ico">${iconePop(p.categoria)}</div>
         <div>
           <div class="meta-top">
             <span class="pid">${p.id}</span>
@@ -681,8 +885,13 @@
 
     return `
       <div class="page-head">
-        <div class="eyebrow">${escapeHtml(e.nome||"")} · Unidade ${escapeHtml(e.cidade||"")}</div>
-        <h1>Biblioteca de POPs</h1>
+        <div class="page-head-row">
+          <div class="page-icon">${ic.folder}</div>
+          <div>
+            <div class="eyebrow">${escapeHtml(e.nome||"")} · Unidade ${escapeHtml(e.cidade||"")}</div>
+            <h1 style="margin-top:2px">Biblioteca de POPs</h1>
+          </div>
+        </div>
       </div>
       <div class="toolbar">
         <div class="search">${ic.search}<input id="in-busca" placeholder="Buscar procedimento…" value="${escapeHtml(App.busca)}"></div>
@@ -708,35 +917,68 @@
     let corpo;
     if (App.abaPop === "leitura"){
       corpo = viewLeitura(p, leituras, equipe, totalLeram);
-    } else {
+    } else if (App.abaPop === "historico"){
+      corpo = viewHistorico(p);
+    } else if (App.editando){
+      // EDITOR
       corpo = `
-        <div class="doc-card">
-          <div class="doc-sec">1. Objetivo</div>
-          <p>Estabelecer o procedimento para dispensação de medicamentos sujeitos a controle especial, garantindo a rastreabilidade e a conformidade com a legislação sanitária vigente.</p>
-          <div class="doc-sec">2. Responsabilidades</div>
-          <p>O farmacêutico responsável técnico é encarregado da conferência da receita, escrituração no SNGPC e orientação ao paciente. O balconista auxilia na organização e no atendimento inicial.</p>
-          <div class="doc-sec">3. Procedimento</div>
-          <p>Receber a receita, verificar a validade e a numeração, conferir os dados do prescritor e do paciente, separar o medicamento, registrar a saída no SNGPC e reter a via conforme exigência legal.</p>
-        </div>
+        <div class="editor-hint">${ic.edit} Use <strong>## Título</strong> para começar uma seção. Cada save gera uma nova versão.</div>
+        <textarea id="pop-editor" class="pop-editor" spellcheck="true">${escapeHtml(App.rascunhoConteudo)}</textarea>
+        <div class="fld" style="margin-top:12px"><label>Nota da alteração (opcional)</label>
+          <input id="pop-nota" placeholder="Ex: revisão de redação da seção 2"></div>
         <div class="doc-actions">
-          <button class="btn btn-primary">${ic.check} Enviar para aprovação</button>
-          <button class="btn">${ic.share} Distribuir para leitura</button>
-          <button class="btn">${ic.download} Exportar PDF</button>
+          <button class="btn btn-primary" id="btn-salvar-versao">${ic.check} Salvar nova versão</button>
+          <button class="btn" id="btn-cancelar-edicao">Cancelar</button>
         </div>`;
+    } else {
+      // VISUALIZAÇÃO
+      const acoes = [];
+      if (pode("editar")) acoes.push(`<button class="btn" id="btn-editar">${ic.edit} Editar</button>`);
+      if (pode("aprovar") && (p.status==="aprovacao" || p.status==="rascunho"))
+        acoes.push(`<button class="btn btn-primary" id="btn-aprovar">${ic.check} Aprovar e publicar</button>`);
+      if (pode("editar") && p.status==="rascunho")
+        acoes.push(`<button class="btn" id="btn-enviar-aprovacao">${ic.share} Enviar para aprovação</button>`);
+      acoes.push(`<button class="btn" id="btn-distribuir">${ic.share} Distribuir</button>`);
+      acoes.push(`<button class="btn" id="btn-pdf">${ic.download} PDF</button>`);
+      corpo = `
+        <div class="doc-card">${renderConteudo(p.conteudo)}</div>
+        <div class="doc-actions">${acoes.join("")}</div>`;
     }
 
     return `
       <button class="back-link" data-nav="biblioteca">← Biblioteca</button>
       <div class="meta-top" style="margin-bottom:6px">
         <span class="pid">${p.id}</span>${badge(p.status)}
+        <span class="pid">v${p.versao_atual}</span>
       </div>
-      <h1 style="font-size:24px;font-weight:700;margin-bottom:16px">${escapeHtml(p.nome)}</h1>
-      ${faixa}
+      <h1 style="font-family:var(--display);font-size:22px;font-weight:700;margin-bottom:16px;letter-spacing:-.01em">${escapeHtml(p.nome)}</h1>
+      ${App.editando ? "" : faixa}
       <div class="tabs">
         <button class="tab-btn ${App.abaPop==="documento"?"active":""}" data-aba="documento">${ic.file} Documento</button>
         <button class="tab-btn ${App.abaPop==="leitura"?"active":""}" data-aba="leitura">${ic.eye} Leitura (${totalLeram}/${equipe})</button>
+        <button class="tab-btn ${App.abaPop==="historico"?"active":""}" data-aba="historico">${ic.history} Histórico</button>
       </div>
       ${corpo}`;
+  }
+
+  // ---- Aba: Histórico de versões ----
+  function viewHistorico(p){
+    const versoes = DB.getVersoes(p.id);
+    if (!versoes.length) return '<p style="color:var(--ink-soft)">Sem histórico de versões.</p>';
+    const itens = versoes.map(v => `
+      <div class="ver-item">
+        <div class="ver-dot ${v.vigente?"atual":""}"></div>
+        <div class="ver-body">
+          <div class="ver-head">
+            <span class="ver-num">v${v.numero}</span>
+            ${v.vigente?'<span class="badge-pill b-vigente">versão vigente</span>':""}
+            <span class="ver-data">${fmtData(v.criado_em.slice(0,10))}</span>
+          </div>
+          <div class="ver-nota">${escapeHtml(v.nota)}</div>
+          <div class="ver-autor">${ic.user2} ${escapeHtml(v.autor_nome)}</div>
+        </div>
+      </div>`).join("");
+    return `<div class="ver-timeline">${itens}</div>`;
   }
 
   function viewLeitura(p, leituras, equipe, totalLeram){
@@ -790,8 +1032,9 @@
           <button class="btn-amber" style="margin-left:auto" data-pop="${a.pop_afetado_id}">Revisar agora</button></div>`:""}
       </div>`).join("");
     return `
-      <div class="page-head"><div style="display:flex;align-items:center;gap:10px">${ic.shieldc}<h1 style="margin:0">Alertas regulatórios</h1></div>
-        <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Mudanças normativas que afetam os documentos da sua farmácia.</p></div>
+      <div class="page-head"><div class="page-head-row"><div class="page-icon amber">${ic.shieldc}</div>
+        <div><h1 style="margin-top:0">Alertas regulatórios</h1>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Mudanças normativas que afetam os documentos da sua farmácia.</p></div></div></div>
       ${cards}
       <div style="margin-top:16px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-soft);padding:16px;border:1px dashed var(--line);border-radius:10px">
         Monitoramento curado pela equipe DocFlow · fontes oficiais ANVISA e Vigilância Sanitária</div>`;
@@ -825,8 +1068,13 @@
 
     return `
       <div class="page-head">
-        <div style="display:flex;align-items:center;gap:10px">${ic.users}<h1 style="margin:0">Equipe</h1></div>
-        <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Cadastre os funcionários que leem os POPs e defina quem pode editar e aprovar documentos.</p>
+        <div class="page-head-row">
+          <div class="page-icon">${ic.users}</div>
+          <div>
+            <h1 style="margin-top:0">Equipe</h1>
+            <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Cadastre os funcionários que leem os POPs e defina quem pode editar e aprovar.</p>
+          </div>
+        </div>
       </div>
       <div class="toolbar">
         <label class="team-toggle"><input type="checkbox" id="chk-inativos" ${App.mostrarInativos?"checked":""}> Mostrar inativos</label>
@@ -885,6 +1133,69 @@
   }
 
 
+  // ---- Tela: Novo POP ----
+  function viewNovoPop(){
+    const modo = App.novoPop && App.novoPop.modo;
+    if (modo === "modelo"){
+      const modelos = DB.listarModelos().map(m => `
+        <div class="model-row">
+          <div class="mi">${iconePop(m.categoria)}</div>
+          <div class="mn">${escapeHtml(m.nome)}<div style="font-size:12px;color:var(--ink-soft);font-weight:400">${escapeHtml(m.categoria)}</div></div>
+          <button class="btn btn-primary" data-modelo="${m.id}">Usar ${ic.arrow}</button>
+        </div>`).join("");
+      return `
+        <button class="back-link" id="novo-voltar">← Voltar</button>
+        <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.template}</div>
+          <div><h1 style="margin-top:0">Escolher modelo</h1>
+          <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Parta de um POP pronto e adapte à sua farmácia.</p></div></div></div>
+        ${modelos}`;
+    }
+    if (modo === "branco"){
+      return `
+        <button class="back-link" id="novo-voltar">← Voltar</button>
+        <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.blank}</div>
+          <div><h1 style="margin-top:0">Criar do zero</h1>
+          <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Dê um nome e uma categoria. O editor abre em seguida.</p></div></div></div>
+        ${App.novoErro?`<div class="err">${escapeHtml(App.novoErro)}</div>`:""}
+        <div class="doc-card" style="max-width:520px">
+          <div class="fld" style="margin-bottom:14px"><label>Nome do procedimento <span class="req">*</span></label>
+            <input id="np-nome" placeholder="Ex: Fracionamento de medicamentos"></div>
+          <div class="fld"><label>Categoria</label>
+            <input id="np-cat" placeholder="Ex: Dispensação" value="Geral"></div>
+          <div class="doc-actions" style="margin-top:18px">
+            <button class="btn btn-primary" id="np-criar">Criar e editar ${ic.arrow}</button>
+          </div>
+        </div>`;
+    }
+    return `
+      <button class="back-link" data-nav="biblioteca">← Biblioteca</button>
+      <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.plus}</div>
+        <div><h1 style="margin-top:0">Novo procedimento</h1>
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:3px">Escolha como quer começar.</p></div></div></div>
+      <div class="opt-grid">
+        <button class="opt-card" data-modo="modelo">
+          <div class="oi">${ic.template}</div>
+          <h3>Usar um modelo</h3>
+          <p>Comece de um POP pronto, feito para farmácias, e adapte ao seu estabelecimento.</p>
+        </button>
+        <button class="opt-card" data-modo="branco">
+          <div class="oi">${ic.blank}</div>
+          <h3>Criar do zero</h3>
+          <p>Escreva o procedimento você mesmo, do início, no editor.</p>
+        </button>
+        <div class="opt-card soon">
+          <div class="oi">${ic.upload}</div>
+          <h3>Importar arquivo <span class="badge-pill b-rascunho" style="margin-left:4px">em breve</span></h3>
+          <p>Suba um POP em Word ou PDF que você já tem. Numa próxima versão.</p>
+        </div>
+        <div class="opt-card soon">
+          <div class="oi">${ic.doc2}</div>
+          <h3>Criar com IA <span class="badge-pill b-rascunho" style="margin-left:4px">em breve</span></h3>
+          <p>Gerar um rascunho automaticamente. Numa próxima versão.</p>
+        </div>
+      </div>`;
+  }
+
   function viewPlanos(){
     const inclB = ["Biblioteca de POPs e modelos de farmácia","Editor com controle de versões e histórico","Registro de leitura da equipe (data e hora)","Distribuição por link e QR code","Assistente de redação com IA","Exportação em PDF"];
     const inclP = ["Tudo do plano Essencial","Alertas de mudanças em RDCs e Portarias","Sinalização automática de POPs a revisar","Curadoria por fontes oficiais da ANVISA"];
@@ -894,9 +1205,9 @@
         <p style="font-size:14px;color:var(--ink-soft);margin-top:6px">Toda assinatura começa com a implantação da sua biblioteca, feita pela nossa equipe.</p></div>
       <div style="display:flex;align-items:center;gap:14px;background:var(--brand-deep);border-radius:12px;padding:18px 22px;margin-bottom:20px;flex-wrap:wrap">
         <div style="flex:1;min-width:200px"><div style="font-size:16px;font-weight:700;color:#fff">Implantação inicial</div>
-          <div style="font-size:13px;color:#B6D8D3;margin-top:2px">Biblioteca configurada e pronta no primeiro acesso.</div></div>
+          <div style="font-size:13px;color:#CBBEF0;margin-top:2px">Biblioteca configurada e pronta no primeiro acesso.</div></div>
         <div style="text-align:right"><div style="font-family:var(--mono);font-size:24px;font-weight:700;color:#fff">R$ 47</div>
-          <div style="font-family:var(--mono);font-size:11px;color:#8FD4C9">pagamento único</div></div>
+          <div style="font-family:var(--mono);font-size:11px;color:#C9B6FF">pagamento único</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="planos-grid">
         <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px">
@@ -931,6 +1242,7 @@
     // App logado: escolhe a tela interna
     let inner;
     if (App.tela === "pop") inner = viewPop();
+    else if (App.tela === "novopop") inner = viewNovoPop();
     else if (App.tela === "alertas") inner = viewAlertas();
     else if (App.tela === "planos") inner = viewPlanos();
     else if (App.tela === "equipe") inner = viewEquipe();
@@ -968,9 +1280,75 @@
       };
     }
 
-    // Novo POP (placeholder por enquanto)
+    // Novo POP → tela de criação
     const btnNovo = document.getElementById("btn-novo");
-    if (btnNovo) btnNovo.onclick = () => alert("Criação de POP (modelo / importar / IA) — próxima etapa.");
+    if (btnNovo) btnNovo.onclick = () => { App.novoPop = {}; App.novoErro = null; irPara("novopop"); };
+
+    // ---- Novo POP: escolha de caminho ----
+    document.querySelectorAll("[data-modo]").forEach(el => {
+      el.onclick = () => { App.novoPop = { modo: el.getAttribute("data-modo") }; App.novoErro = null; render(); };
+    });
+    const novoVoltar = document.getElementById("novo-voltar");
+    if (novoVoltar) novoVoltar.onclick = () => { App.novoPop = {}; App.novoErro = null; render(); };
+
+    // usar modelo → cria POP e abre editor
+    document.querySelectorAll("[data-modelo]").forEach(el => {
+      el.onclick = () => {
+        const m = DB.listarModelos().find(x => x.id === el.getAttribute("data-modelo"));
+        if (!m) return;
+        const pop = DB.criarPop({ nome:m.nome, categoria:m.categoria, origem:"modelo", conteudo:m.conteudo });
+        App.novoPop = null;
+        App.popId = pop.id; App.tela = "pop"; App.abaPop = "documento";
+        App.editando = true; App.rascunhoConteudo = pop.conteudo;
+        render();
+      };
+    });
+
+    // criar do zero
+    const npCriar = document.getElementById("np-criar");
+    if (npCriar) npCriar.onclick = () => {
+      const nome = (document.getElementById("np-nome").value||"").trim();
+      const cat = (document.getElementById("np-cat").value||"").trim() || "Geral";
+      if (!nome){ App.novoErro = "Informe o nome do procedimento."; render(); return; }
+      const pop = DB.criarPop({ nome, categoria:cat, origem:"ia" });
+      App.novoPop = null;
+      App.popId = pop.id; App.tela = "pop"; App.abaPop = "documento";
+      App.editando = true; App.rascunhoConteudo = pop.conteudo;
+      render();
+    };
+
+    // ---- Editor de POP ----
+    const btnEditar = document.getElementById("btn-editar");
+    if (btnEditar) btnEditar.onclick = () => {
+      const p = DB.getPop(App.popId);
+      App.editando = true; App.rascunhoConteudo = p ? p.conteudo : ""; render();
+      const ta = document.getElementById("pop-editor"); if (ta) ta.focus();
+    };
+    // manter o buffer sincronizado ao digitar
+    const editor = document.getElementById("pop-editor");
+    if (editor) editor.oninput = () => { App.rascunhoConteudo = editor.value; };
+
+    const btnSalvarV = document.getElementById("btn-salvar-versao");
+    if (btnSalvarV) btnSalvarV.onclick = () => {
+      const nota = (document.getElementById("pop-nota").value||"").trim();
+      DB.salvarNovaVersao(App.popId, App.rascunhoConteudo, nota);
+      App.editando = false; App._leu = false;
+      render();
+    };
+    const btnCancelarEd = document.getElementById("btn-cancelar-edicao");
+    if (btnCancelarEd) btnCancelarEd.onclick = () => { App.editando = false; render(); };
+
+    // ---- Aprovação / status ----
+    const btnEnviarAp = document.getElementById("btn-enviar-aprovacao");
+    if (btnEnviarAp) btnEnviarAp.onclick = () => { DB.definirStatus(App.popId, "aprovacao"); render(); };
+    const btnAprovar = document.getElementById("btn-aprovar");
+    if (btnAprovar) btnAprovar.onclick = () => { DB.definirStatus(App.popId, "vigente"); render(); };
+
+    // Distribuir / PDF (próximas etapas — avisos por enquanto)
+    const btnDist = document.getElementById("btn-distribuir");
+    if (btnDist) btnDist.onclick = () => alert("Distribuição por link/QR — próxima etapa (A4).");
+    const btnPdf = document.getElementById("btn-pdf");
+    if (btnPdf) btnPdf.onclick = () => alert("Exportar PDF — próxima etapa (A6).");
 
     // Abas do POP
     document.querySelectorAll("[data-aba]").forEach(el => {
