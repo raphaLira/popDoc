@@ -617,17 +617,24 @@
 
     /* — Modais — */
     .modal-bg{position:fixed;inset:0;background:rgba(25,20,35,.45);backdrop-filter:blur(4px);
-      display:flex;align-items:flex-end;justify-content:center;padding:0;z-index:60;overflow-y:auto;animation:fadeIn .18s ease}
-    .modal{background:var(--panel);border-radius:var(--r4) var(--r4) 0 0;padding:26px 24px calc(26px + env(safe-area-inset-bottom));max-width:560px;width:100%;
+      display:flex;align-items:flex-end;justify-content:center;padding:0;z-index:60;animation:fadeIn .18s ease}
+    .modal{background:var(--panel);border-radius:var(--r4) var(--r4) 0 0;max-width:560px;width:100%;
+      max-height:92vh;display:flex;flex-direction:column;overflow:hidden;
       box-shadow:var(--sh3);animation:slideUp .28s cubic-bezier(.16,1,.3,1)}
-    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s5)}
-    .modal-head h2{font-size:21px;font-weight:700;letter-spacing:-.02em}
-    .modal-actions{display:flex;gap:var(--s3);margin-top:var(--s5)}
+    /* cabeçalho fixo no topo */
+    .modal-head{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+      padding:22px 24px 14px;border-bottom:1px solid var(--line-soft)}
+    .modal-head h2{font-size:20px;font-weight:700;letter-spacing:-.02em}
+    /* corpo rolável — recebe todo o conteúdo entre cabeçalho e ações */
+    .modal-body{overflow-y:auto;padding:20px 24px;flex:1;-webkit-overflow-scrolling:touch}
+    /* ações fixas no rodapé */
+    .modal-actions{display:flex;gap:var(--s3);flex-shrink:0;padding:16px 24px calc(16px + env(safe-area-inset-bottom));
+      border-top:1px solid var(--line-soft);background:var(--panel)}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
     @media (min-width:640px){
-      .modal-bg{align-items:flex-start;padding:var(--s6) var(--s4)}
-      .modal{border-radius:var(--r4);margin-top:var(--s6)}
+      .modal-bg{align-items:center;padding:var(--s5) var(--s4)}
+      .modal{border-radius:var(--r4);max-height:88vh}
       @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
     }
 
@@ -717,6 +724,55 @@
       .page-head h1{font-size:21px}
       .tab .lbl{font-size:9.5px}
     }
+
+    /* — Avatar no topbar (abre menu da conta) — */
+    .avatar-btn{margin-left:auto;width:42px;height:42px;border-radius:var(--r-pill);border:none;
+      background:var(--c-roxo);color:var(--c-roxo-ink);font-size:14px;font-weight:700;cursor:pointer;
+      display:grid;place-items:center;transition:transform .1s,box-shadow .16s;flex-shrink:0}
+    .avatar-btn:hover{box-shadow:var(--sh2)}
+    .avatar-btn:active{transform:scale(.95)}
+    .avatar-btn:focus-visible{outline:none;box-shadow:var(--ring)}
+    .topbar .estab{margin-left:auto}
+    .topbar .estab + .avatar-btn{margin-left:14px}
+
+    /* — Chip de perfil clicável na sidebar — */
+    .user-chip{display:flex;align-items:center;gap:11px;padding:10px 12px;width:100%;border:1px solid var(--line);
+      background:var(--panel);border-radius:var(--r2);cursor:pointer;transition:background .16s,border-color .16s}
+    .user-chip:hover{background:var(--panel-2)}
+    .user-chip .av{width:36px;height:36px;border-radius:var(--r-pill);background:var(--c-roxo);color:var(--c-roxo-ink);
+      display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0}
+    .user-chip .nm{font-size:13.5px;font-weight:600;color:var(--ink)}
+    .user-chip .rl{font-size:11.5px;color:var(--ink-faint)}
+    .user-chip svg{color:var(--ink-faint);flex-shrink:0}
+    .sidebar-foot{margin-top:auto;padding-top:10px;border:none}
+
+    /* — Menu da conta (dropdown desktop / sheet mobile) — */
+    .menu-bg{position:fixed;inset:0;background:rgba(25,20,35,.4);backdrop-filter:blur(3px);z-index:70;
+      display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .16s ease}
+    .menu-sheet{background:var(--panel);width:100%;max-width:440px;border-radius:var(--r4) var(--r4) 0 0;
+      padding:12px 12px calc(12px + env(safe-area-inset-bottom));box-shadow:var(--sh3);
+      animation:slideUp .26s cubic-bezier(.16,1,.3,1)}
+    .menu-user{display:flex;align-items:center;gap:13px;padding:14px 14px 16px}
+    .menu-user .av{width:48px;height:48px;border-radius:var(--r-pill);background:var(--c-roxo);color:var(--c-roxo-ink);
+      display:grid;place-items:center;font-size:16px;font-weight:700;flex-shrink:0}
+    .menu-user .nm{font-size:16px;font-weight:700;letter-spacing:-.02em}
+    .menu-user .rl{font-size:12.5px;color:var(--ink-soft);margin-top:1px}
+    .menu-item{display:flex;align-items:center;gap:13px;width:100%;padding:15px 14px;border:none;background:none;
+      font-family:var(--sans);font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;border-radius:var(--r2);
+      text-align:left;transition:background .14s}
+    .menu-item:hover{background:var(--panel-2)}
+    .menu-item span{flex:1}
+    .menu-item svg{width:20px;height:20px;color:var(--ink-soft);flex-shrink:0}
+    .menu-item.danger{color:var(--red)}
+    .menu-item.danger svg{color:var(--red)}
+    .menu-item + .menu-item{border-top:1px solid var(--line-soft)}
+    @media (min-width:900px){
+      /* no desktop, o menu vira um dropdown ancorado no canto inferior esquerdo (perto da sidebar) */
+      .menu-bg{align-items:flex-end;justify-content:flex-start;background:rgba(25,20,35,.25)}
+      .menu-sheet{max-width:260px;margin:0 0 78px 14px;border-radius:var(--r3);animation:popUp .18s ease}
+    }
+    @keyframes popUp{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
   </style>
 </head>
 <body>
@@ -1182,6 +1238,7 @@
     novoPop: null,        // {} durante criação de POP
     novoErro: null,
     configAberta: false,  // modal de configurações do estabelecimento
+    contaAberta: false,   // menu da conta (config + sair)
     distribuirPop: null,  // POP sendo distribuído (tela distribuir)
     // Visão pública do colaborador (leitura via link)
     colabPop: null,       // POP aberto no modo colaborador
@@ -1293,6 +1350,7 @@
     clock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
     warn:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
     chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+    chevUp:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
     check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
     share:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
     download:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
@@ -1416,9 +1474,9 @@
           <div class="mark">${ic.file}</div>
           <div class="name">DocFlow<span>AI</span></div>
           <div class="estab">${escapeHtml(e.nome||"")}<br>${escapeHtml(e.cidade||"")} · ${escapeHtml(e.uf||"")} · plano ${escapeHtml(e.plano||"")}</div>
-          <button class="btn-logout" id="btn-config" title="Configurações">${ic.gear}</button>
-          <button class="btn-logout" id="btn-sair">${ic.logout} Sair</button>
+          <button class="avatar-btn" id="btn-conta" title="Sua conta" aria-label="Sua conta">${escapeHtml(p.iniciais||"?")}</button>
         </header>
+        ${App.contaAberta ? viewMenuConta() : ""}
         ${App.configAberta ? viewConfigEstab() : ""}
         <div class="body">
           <aside class="sidebar">
@@ -1427,11 +1485,12 @@
             ${pode("gerenciarEquipe") ? nav("equipe", ic.users, "Equipe") : ""}
             ${nav("planos", ic.card, "Planos")}
             <div class="sidebar-foot">
-              <div class="user-chip">
+              <button class="user-chip" id="btn-conta-side">
                 <div class="av">${escapeHtml(p.iniciais||"?")}</div>
-                <div><div class="nm">${escapeHtml(p.nome||"")}</div>
+                <div style="flex:1;text-align:left"><div class="nm">${escapeHtml(p.nome||"")}</div>
                 <div class="rl">${PAPEL_LABEL[papelAtual()]||""}</div></div>
-              </div>
+                ${ic.chevUp}
+              </button>
             </div>
           </aside>
           <div class="content">${inner}</div>
@@ -1442,6 +1501,24 @@
           ${pode("gerenciarEquipe") ? tab("equipe", ic.users, "Equipe") : ""}
           ${tab("planos", ic.card, "Planos")}
         </nav>
+      </div>`;
+  }
+
+  // ---- Menu da conta (Configurações + Sair) ----
+  function viewMenuConta(){
+    const p = Auth.perfil || {}, e = Auth.estabelecimento || {};
+    return `
+      <div class="menu-bg" id="conta-bg">
+        <div class="menu-sheet">
+          <div class="menu-user">
+            <div class="av">${escapeHtml(p.iniciais||"?")}</div>
+            <div><div class="nm">${escapeHtml(p.nome||"")}</div>
+              <div class="rl">${escapeHtml(p.email||"")}</div>
+              <div class="rl">${escapeHtml(e.nome||"")} · ${PAPEL_LABEL[papelAtual()]||""}</div></div>
+          </div>
+          <button class="menu-item" id="menu-config">${ic.gear}<span>Configurações do estabelecimento</span>${ic.chev}</button>
+          <button class="menu-item danger" id="menu-sair">${ic.logout}<span>Sair da conta</span></button>
+        </div>
       </div>`;
   }
 
@@ -1687,33 +1764,35 @@
             <h2>${novo?"Novo funcionário":"Editar funcionário"}</h2>
             <button class="icon-btn" id="func-fechar" style="border:none">${ic.x}</button>
           </div>
-          ${App.funcErro?`<div class="err">${escapeHtml(App.funcErro)}</div>`:""}
-          <div class="form-grid">
-            <div class="fld full"><label>Nome completo <span class="req">*</span></label>
-              <input id="f-nome" value="${escapeHtml(f.nome||"")}" placeholder="Nome e sobrenome"></div>
-            <div class="fld"><label>CPF <span class="req">*</span></label>
-              <input id="f-cpf" value="${escapeHtml(f.cpf||"")}" placeholder="000.000.000-00" inputmode="numeric">
-              <div class="hint">Obrigatório — identifica quem leu cada POP.</div></div>
-            <div class="fld"><label>Cargo <span class="req">*</span></label>
-              <input id="f-cargo" value="${escapeHtml(f.cargo||"")}" placeholder="Ex: Balconista"></div>
-            <div class="fld"><label>Papel no sistema <span class="req">*</span></label>
-              <select id="f-papel">
-                ${opt("leitor","Leitor — só lê e confirma",f.papel||"leitor")}
-                ${opt("editor","Editor — cria e edita POPs",f.papel)}
-                ${opt("responsavel_tecnico","Responsável Técnico — acesso total",f.papel)}
-              </select></div>
-            <div class="fld"><label>CRF (se farmacêutico)</label>
-              <input id="f-crf" value="${escapeHtml(f.crf||"")}" placeholder="CRF-UF 00000"></div>
-            <div class="fld"><label>E-mail <span class="req">*</span></label>
-              <input id="f-email" value="${escapeHtml(f.email||"")}" placeholder="email@exemplo.com" inputmode="email"></div>
-            <div class="fld"><label>Telefone <span class="req">*</span></label>
-              <input id="f-tel" value="${escapeHtml(f.telefone||"")}" placeholder="(00) 00000-0000" inputmode="tel"></div>
-            <div class="fld full"><label>Data de admissão <span class="req">*</span></label>
-              <input id="f-adm" type="date" value="${escapeHtml(f.admissao||"")}">
-              <div class="hint">Comprova que a pessoa estava na equipe na data da leitura.</div></div>
-          </div>
-          <div class="role-help">
-            <strong>Sobre os papéis:</strong> apenas o Responsável Técnico pode aprovar e publicar POPs e gerenciar a equipe. O Editor prepara documentos, mas a versão vigente sempre passa pelo RT.
+          <div class="modal-body">
+            ${App.funcErro?`<div class="err">${escapeHtml(App.funcErro)}</div>`:""}
+            <div class="form-grid">
+              <div class="fld full"><label>Nome completo <span class="req">*</span></label>
+                <input id="f-nome" value="${escapeHtml(f.nome||"")}" placeholder="Nome e sobrenome"></div>
+              <div class="fld"><label>CPF <span class="req">*</span></label>
+                <input id="f-cpf" value="${escapeHtml(f.cpf||"")}" placeholder="000.000.000-00" inputmode="numeric">
+                <div class="hint">Identifica quem leu cada POP.</div></div>
+              <div class="fld"><label>Cargo</label>
+                <input id="f-cargo" value="${escapeHtml(f.cargo||"")}" placeholder="Ex: Balconista"></div>
+              <div class="fld"><label>Papel no sistema <span class="req">*</span></label>
+                <select id="f-papel">
+                  ${opt("leitor","Leitor — só lê e confirma",f.papel||"leitor")}
+                  ${opt("editor","Editor — cria e edita POPs",f.papel)}
+                  ${opt("responsavel_tecnico","Responsável Técnico — acesso total",f.papel)}
+                </select></div>
+              <div class="fld"><label>CRF (se farmacêutico)</label>
+                <input id="f-crf" value="${escapeHtml(f.crf||"")}" placeholder="CRF-UF 00000"></div>
+              <div class="fld"><label>E-mail</label>
+                <input id="f-email" value="${escapeHtml(f.email||"")}" placeholder="email@exemplo.com" inputmode="email"></div>
+              <div class="fld"><label>Telefone</label>
+                <input id="f-tel" value="${escapeHtml(f.telefone||"")}" placeholder="(00) 00000-0000" inputmode="tel"></div>
+              <div class="fld full"><label>Data de admissão</label>
+                <input id="f-adm" type="date" value="${escapeHtml(f.admissao||"")}">
+                <div class="hint">Comprova que a pessoa estava na equipe na data da leitura.</div></div>
+            </div>
+            <div class="role-help">
+              <strong>Sobre os papéis:</strong> apenas o Responsável Técnico pode aprovar e publicar POPs e gerenciar a equipe. O Editor prepara documentos, mas a versão vigente sempre passa pelo RT.
+            </div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-primary" id="func-salvar" style="flex:1;justify-content:center">${novo?"Cadastrar":"Salvar alterações"}</button>
@@ -1737,20 +1816,22 @@
             <h2>Configurações do estabelecimento</h2>
             <button class="icon-btn" id="cfg-fechar" style="border:none">${ic.x}</button>
           </div>
-          <div class="form-grid">
-            <div class="fld full"><label>Nome do estabelecimento</label>
-              <input id="cfg-nome" value="${escapeHtml(e.nome||"")}"></div>
-            <div class="fld"><label>Cidade</label>
-              <input id="cfg-cidade" value="${escapeHtml(e.cidade||"")}"></div>
-            <div class="fld"><label>Estado (UF) <span class="req">*</span></label>
-              <select id="cfg-uf">${opts}</select>
-              <div class="hint">Define quais modelos regulatórios ficam disponíveis.</div></div>
-          </div>
-          <div class="uf-banner ${ufCoberto(e.uf)?"ok":"soon"}" style="margin-top:16px">
-            ${ufCoberto(e.uf)?ic.shieldc:ic.warn}
-            ${ufCoberto(e.uf)
-              ? `Seu estado tem modelos curados com base na regulamentação local.`
-              : `Ainda não há modelos curados para o seu estado. Estamos ampliando a cobertura; enquanto isso, você pode criar POPs do zero.`}
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="fld full"><label>Nome do estabelecimento</label>
+                <input id="cfg-nome" value="${escapeHtml(e.nome||"")}"></div>
+              <div class="fld"><label>Cidade</label>
+                <input id="cfg-cidade" value="${escapeHtml(e.cidade||"")}"></div>
+              <div class="fld"><label>Estado (UF) <span class="req">*</span></label>
+                <select id="cfg-uf">${opts}</select>
+                <div class="hint">Define quais modelos regulatórios ficam disponíveis.</div></div>
+            </div>
+            <div class="uf-banner ${ufCoberto(e.uf)?"ok":"soon"}" style="margin-top:16px">
+              ${ufCoberto(e.uf)?ic.shieldc:ic.warn}
+              ${ufCoberto(e.uf)
+                ? `Seu estado tem modelos curados com base na regulamentação local.`
+                : `Ainda não há modelos curados para o seu estado. Estamos ampliando a cobertura; enquanto isso, você pode criar POPs do zero.`}
+            </div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-primary" id="cfg-salvar" style="flex:1;justify-content:center">Salvar</button>
@@ -2020,13 +2101,20 @@
   }
 
   function ligarApp(){
-    // Sair
-    const btnSair = document.getElementById("btn-sair");
-    if (btnSair) btnSair.onclick = () => { App.tela="biblioteca"; App.popId=null; App._leu=false; App.configAberta=false; Auth.sair(); };
+    // Menu da conta (abre pelo avatar do topo ou pelo chip da sidebar)
+    const abrirConta = () => { App.contaAberta = true; render(); };
+    const btnConta = document.getElementById("btn-conta");
+    if (btnConta) btnConta.onclick = abrirConta;
+    const btnContaSide = document.getElementById("btn-conta-side");
+    if (btnContaSide) btnContaSide.onclick = abrirConta;
+    const contaBg = document.getElementById("conta-bg");
+    if (contaBg) contaBg.onclick = (ev) => { if (ev.target === contaBg){ App.contaAberta = false; render(); } };
+    const menuSair = document.getElementById("menu-sair");
+    if (menuSair) menuSair.onclick = () => { App.tela="biblioteca"; App.popId=null; App._leu=false; App.configAberta=false; App.contaAberta=false; Auth.sair(); };
+    const menuConfig = document.getElementById("menu-config");
+    if (menuConfig) menuConfig.onclick = () => { App.contaAberta = false; App.configAberta = true; render(); };
 
     // Configurações do estabelecimento
-    const btnConfig = document.getElementById("btn-config");
-    if (btnConfig) btnConfig.onclick = () => { App.configAberta = true; render(); };
     const cfgFechar = () => { App.configAberta = false; render(); };
     const cfgBg = document.getElementById("cfg-bg");
     if (cfgBg) cfgBg.onclick = (ev) => { if (ev.target === cfgBg) cfgFechar(); };
