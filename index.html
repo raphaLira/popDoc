@@ -1126,9 +1126,14 @@
         leitor_nome:colaborador.nome, leitor_cpf:colaborador.cpf, leitor_cargo:colaborador.cargo,
         confirmado_em:new Date().toISOString() };
       if (!MODO_MOCK){
-        const { data } = await sb.from("registros_leitura")
-          .insert({ ...reg, estabelecimento_id:e.id }).select().single();
-        if (data) reg.confirmado_em = data.confirmado_em; // usa o timestamp do servidor
+        // Não usar .select() de volta: o visitante anônimo tem permissão de INSERT,
+        // mas não de SELECT nesta tabela. Pedir o retorno faria o insert falhar.
+        const { error } = await sb.from("registros_leitura")
+          .insert({ ...reg, estabelecimento_id:e.id });
+        if (error){
+          // Propaga o erro para a tela avisar — nada de falso sucesso.
+          throw new Error(error.message || "Falha ao registrar a leitura no servidor.");
+        }
       }
       Store.leituras.push(reg);
       return reg;
@@ -2403,10 +2408,17 @@
       if (!colab){ App.colabErro = "CPF não encontrado. Confirme com o responsável técnico se você está cadastrado."; render(); return; }
       const p = App.colabPop;
       btnConfirmar.disabled = true;
-      const reg = await DB.confirmarLeitura(p.id, p.versao_atual, colab);
-      App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
-      App.colabEtapa = "feito";
-      render();
+      App.colabErro = null;
+      try {
+        const reg = await DB.confirmarLeitura(p.id, p.versao_atual, colab);
+        App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
+        App.colabEtapa = "feito";
+        render();
+      } catch(err){
+        // Não mostra falso sucesso: se o banco recusou, avisa e deixa tentar de novo.
+        App.colabErro = "Não foi possível registrar sua leitura agora: " + (err && err.message ? err.message : "erro de conexão") + " Tente novamente ou avise o responsável.";
+        render();
+      }
     };
   }
 
