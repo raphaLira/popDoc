@@ -870,6 +870,73 @@
       font-size:13.5px;line-height:1.6;font-family:var(--sans);color:var(--ink);background:var(--panel);resize:vertical;transition:border-color .16s,box-shadow .16s}
     .form-sec-desc:focus{outline:none;border-color:var(--brand);box-shadow:var(--ring)}
 
+
+    /* ============================================================
+       DOCUMENTOS LEGAIS
+    ============================================================ */
+    .legal-tabs{display:flex;gap:6px;background:var(--panel-2);padding:5px;border-radius:var(--r-pill);
+      width:fit-content;max-width:100%;margin-bottom:var(--s4)}
+    .legal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r3);
+      padding:24px;max-width:760px}
+    .legal-h{font-size:15px;font-weight:700;margin:24px 0 8px;color:var(--ink);letter-spacing:-.01em}
+    .legal-h:first-child{margin-top:0}
+    .legal-p{font-size:14px;line-height:1.7;color:#3A3547;margin-bottom:12px}
+    .legal-ul{margin:0 0 14px 0;padding-left:20px}
+    .legal-ul li{font-size:14px;line-height:1.7;color:#3A3547;margin-bottom:7px}
+    .legal-link{background:none;border:none;color:var(--brand);font-family:var(--sans);
+      font-size:13px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+    .login-legal{margin-top:18px;text-align:center;font-size:12px;color:var(--ink-faint);line-height:1.7}
+    @media (max-width:600px){ .legal-card{padding:18px} }
+
+
+    .legal-publico{max-width:820px;margin:0 auto;padding:28px 20px 60px;background:var(--panel-2);min-height:100vh}
+
+    /* — Cadastro / avisos — */
+    .aceite{display:flex;align-items:flex-start;gap:9px;margin:14px 0 18px;font-size:12.5px;
+      color:var(--ink-soft);line-height:1.6;cursor:pointer}
+    .aceite input{width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--brand);cursor:pointer}
+    .ok-box{background:var(--green-soft);color:#0C7A3D;font-size:13px;padding:13px 15px;
+      border-radius:var(--r2);margin-bottom:var(--s3);line-height:1.6}
+
+    /* — Faixa de teste e bloqueio de assinatura — */
+    .trial-bar{display:flex;align-items:center;gap:10px;background:var(--brand-tint);
+      border:1px solid var(--brand-soft);color:var(--brand);border-radius:var(--r2);
+      padding:11px 14px;margin-bottom:var(--s4);font-size:13px;font-weight:600}
+    .trial-bar.urgente{background:var(--amber-soft);border-color:#F2DCB4;color:var(--amber-deep)}
+    .trial-bar svg{flex-shrink:0}
+    .trial-bar span{flex:1}
+    .trial-btn{background:var(--brand);color:#fff;border:none;border-radius:var(--r-pill);
+      padding:7px 15px;font-size:12.5px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+    .trial-bar.urgente .trial-btn{background:var(--amber-deep)}
+
+    .bloqueio{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      padding:24px;background:var(--panel-2)}
+    .bloqueio-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);
+      padding:32px 26px;max-width:420px;width:100%;text-align:center;box-shadow:var(--sh2)}
+    .bloqueio-ic{width:56px;height:56px;border-radius:99px;background:var(--amber-soft);
+      color:var(--amber-deep);display:grid;place-items:center;margin:0 auto 16px}
+    .bloqueio-ic svg{width:26px;height:26px}
+    .bloqueio-card h2{font-size:20px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+    .bloqueio-card p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:22px}
+    .bloqueio-planos{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+    .bloqueio-nota{font-size:12px!important;color:var(--ink-faint)!important;margin-bottom:14px!important}
+    .bloqueio-acoes{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+    /* — Bloqueio de recurso Premium (upsell) — */
+    .upsell{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);
+      padding:36px 28px;max-width:520px;text-align:center;box-shadow:var(--sh1)}
+    .upsell-ic{width:56px;height:56px;border-radius:99px;background:var(--brand-soft);color:var(--brand);
+      display:grid;place-items:center;margin:0 auto 18px}
+    .upsell-ic svg{width:26px;height:26px}
+    .upsell h2{font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:-.02em}
+    .upsell p{font-size:14px;color:var(--ink-soft);line-height:1.65;margin-bottom:20px}
+    .upsell-list{list-style:none;text-align:left;max-width:340px;margin:0 auto 24px;display:flex;flex-direction:column;gap:11px}
+    .upsell-list li{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+    .upsell-list li svg{width:17px;height:17px;color:var(--green);flex-shrink:0}
+    .kpi-upsell{border:1px dashed var(--brand-soft)!important;background:var(--brand-tint)!important;
+      cursor:pointer;text-align:left;font-family:var(--sans);transition:border-color .16s}
+    .kpi-upsell:hover{border-color:var(--brand)!important}
+    @media (max-width:600px){ .upsell{padding:28px 20px} }
   </style>
 </head>
 <body>
@@ -890,6 +957,16 @@
   // Quando preencher, o app passa a usar o banco real automaticamente.
   const SUPABASE_URL = "https://gkwyziimbcpuvrejwrmj.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrd3l6aWltYmNwdXZyZWp3cm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDQ5NzcsImV4cCI6MjEwMDgyMDk3N30.svPSJo3lojzWjmrdJQXziE39gIc5eSoBbgsa_gEwO2Q";
+
+  // ---- CHECKOUT (Hotmart, Kiwify, Asaas, Mercado Pago...) ----
+  // Cole aqui os links de pagamento de cada plano. Enquanto vazios,
+  // o app mostra um aviso em vez de mandar o cliente para um link quebrado.
+  const CHECKOUT = {
+    essencial: "",   // ex: https://pay.hotmart.com/XXXXXXX
+    premium:   "",   // ex: https://pay.hotmart.com/YYYYYYY
+    suporte:   "",   // ex: https://wa.me/5544999999999
+  };
+  const DIAS_TRIAL = 7;
 
   const MODO_MOCK = !SUPABASE_URL || !SUPABASE_ANON_KEY;
   let sb = null;
@@ -1016,6 +1093,26 @@
   const ufCoberto = (uf) => UFS.some(u => u.uf === uf && u.coberto);
 
   // Iniciais a partir do nome (2 primeiras palavras).
+  // Token aleatório para o link de leitura (usado no modo demo; no banco o
+  // Postgres gera o seu). 32 caracteres — inviável de adivinhar.
+  function tokenAleatorio(){
+    const a = new Uint8Array(16);
+    (window.crypto || window.msCrypto).getRandomValues(a);
+    return Array.from(a).map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
+  // Traduz mensagens do Supabase para linguagem clara.
+  function traduzErroAuth(msg){
+    const m = String(msg||"").toLowerCase();
+    if (m.includes("already registered") || m.includes("already been registered"))
+      return "Este e-mail já tem conta. Tente entrar ou recuperar a senha.";
+    if (m.includes("password") && m.includes("6")) return "A senha precisa ter pelo menos 6 caracteres.";
+    if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
+    if (m.includes("email not confirmed")) return "Confirme seu e-mail antes de entrar. Verifique a caixa de entrada.";
+    if (m.includes("rate limit") || m.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos.";
+    return msg || "Não foi possível concluir. Tente novamente.";
+  }
+
   const iniciaisDe = (nome) =>
     String(nome||"").split(" ").filter(Boolean).slice(0,2).map(w => w[0]).join("").toUpperCase();
 
@@ -1062,6 +1159,8 @@
 
   // Converte uma linha do banco para o formato que o app usa (datas etc.).
   function carregarDoMock(){
+    // garante token de leitura nos POPs de demonstração
+    MOCK.pops.forEach(p => { if (!p.token_leitura) p.token_leitura = tokenAleatorio(); });
     Store.pops = MOCK.pops;
     Store.colaboradores = MOCK.colaboradores;
     Store.versoes = MOCK.versoes;
@@ -1097,7 +1196,7 @@
   const mapPop = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
     categoria:r.categoria, status:r.status, origem:r.origem, versao_atual:r.versao_atual,
     leitura_obrigatoria:r.leitura_obrigatoria, conteudo:r.conteudo||"",
-    atualizado_em:(r.atualizado_em||"").slice(0,10) });
+    token_leitura:r.token_leitura||"", atualizado_em:(r.atualizado_em||"").slice(0,10) });
   const mapColab = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
     cpf:r.cpf, cargo:r.cargo, papel:r.papel, crf:r.crf, email:r.email, telefone:r.telefone,
     admissao:(r.admissao||"").slice(0,10), ativo:r.ativo });
@@ -1182,8 +1281,12 @@
       };
       const versao = { pop_id:id, numero:1, autor_nome:(Auth.perfil&&Auth.perfil.nome)||"",
         nota:"Criação inicial do documento", vigente:true, criado_em:agora };
+      pop.token_leitura = tokenAleatorio();   // link de leitura secreto
       if (!MODO_MOCK){
-        await sb.from("pops").insert({ ...pop, estabelecimento_id:e.id, atualizado_em:agora, criado_em:agora });
+        const { data } = await sb.from("pops")
+          .insert({ ...pop, estabelecimento_id:e.id, atualizado_em:agora, criado_em:agora })
+          .select("token_leitura").maybeSingle();
+        if (data && data.token_leitura) pop.token_leitura = data.token_leitura;
         await sb.from("versoes_pop").insert({ ...versao, estabelecimento_id:e.id });
       }
       Store.pops.push(pop);
@@ -1354,7 +1457,11 @@
     distribuirPop: null,  // POP sendo distribuído (tela distribuir)
     // Visão pública do colaborador (leitura via link)
     colabPop: null,       // POP aberto no modo colaborador
-    colabEtapa: "ler",    // ler | identificar | feito
+    colabEtapa: "ler",    // ler | identificar | feito | erro
+    colabToken: null,     // token do link de leitura
+    authModo: "entrar",   // entrar | cadastrar
+    legalDoc: "termos",   // termos | privacidade (tela de documentos legais)
+    telaAnterior: null,   // para voltar da tela legal
     colabCpf: "",
     colabErro: null,
     colabRegistro: null,  // registro gerado após confirmar
@@ -1399,6 +1506,52 @@
       await this._hidratarReal();
       await carregarDados();
       return {};
+    },
+
+    // Cria a conta. O trigger do banco cria estabelecimento + perfil.
+    async cadastrar({ nome, estab, email, senha }){
+      if (MODO_MOCK){
+        return { erro: "No modo demonstração não é possível criar conta. Conecte o Supabase para usar o cadastro real." };
+      }
+      const { data, error } = await sb.auth.signUp({
+        email: email.trim(),
+        password: senha,
+        options: { data: { full_name: nome, estabelecimento_nome: estab || "Minha Farmácia" } }
+      });
+      if (error) return { erro: traduzErroAuth(error.message) };
+      // Sessão imediata (quando a confirmação de e-mail está desligada)
+      if (data && data.session){
+        await this._hidratarReal();
+        await this.registrarAceiteTermos();
+        if (estab && this.estabelecimento){
+          await this.salvarEstabelecimento({ nome: estab,
+            cidade: this.estabelecimento.cidade || "", uf: this.estabelecimento.uf || "" });
+        }
+        await carregarDados();
+        return {};
+      }
+      // Supabase configurado para exigir confirmação por e-mail
+      return { confirmar: true };
+    },
+
+    // Guarda a prova de consentimento (LGPD).
+    async registrarAceiteTermos(){
+      if (MODO_MOCK || !this.perfil) return;
+      try {
+        await sb.from("perfis").update({
+          termos_aceitos_em: new Date().toISOString(), termos_versao: TERMOS_VERSAO
+        }).eq("user_id", this.perfil.user_id);
+        this.perfil.termos_aceitos_em = new Date().toISOString();
+        this.perfil.termos_versao = TERMOS_VERSAO;
+      } catch(e){ console.log("[DocFlow] aceite de termos:", e && e.message); }
+    },
+
+    async recuperarSenha(email){
+      if (MODO_MOCK) return { erro: "Indisponível no modo demonstração." };
+      const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+      return error ? { erro: traduzErroAuth(error.message) } : {};
     },
 
     async entrarComGoogle(){
@@ -1503,6 +1656,7 @@
      VIEWS
   ============================================================ */
   function viewLogin(){
+    const cadastrando = App.authModo === "cadastrar";
     return `
       <div class="login-wrap">
         <aside class="login-brand">
@@ -1528,6 +1682,35 @@
               <div class="mark">${ic.logo}</div>
               <div class="name">DocFlow<span>AI</span></div>
             </div>
+            ${cadastrando ? `
+            <h2>Criar conta</h2>
+            <div class="lead">${DIAS_TRIAL} dias de teste grátis. Sem cartão.</div>
+
+            <button class="btn btn-block" id="btn-google">${ic.google} Continuar com Google</button>
+
+            <div class="divider"><div class="ln"></div><span>ou com e-mail</span><div class="ln"></div></div>
+
+            <form id="form-cadastro">
+              <label class="field">Seu nome</label>
+              <div class="input-wrap">${ic.users}<input type="text" id="cad-nome" placeholder="Nome e sobrenome" autocomplete="name" required /></div>
+              <label class="field">Nome da farmácia</label>
+              <div class="input-wrap">${ic.folder}<input type="text" id="cad-estab" placeholder="Ex: Farmácia Vida" autocomplete="organization" /></div>
+              <label class="field">E-mail</label>
+              <div class="input-wrap">${ic.mail}<input type="email" id="cad-email" placeholder="voce@farmacia.com.br" autocomplete="email" required /></div>
+              <label class="field">Senha</label>
+              <div class="input-wrap">${ic.lock}<input type="password" id="cad-senha" placeholder="mínimo 8 caracteres" autocomplete="new-password" required /></div>
+              <label class="aceite">
+                <input type="checkbox" id="cad-aceite" />
+                <span>Li e aceito os <button type="button" class="legal-link" data-legal-open="termos">Termos de Uso</button> e a <button type="button" class="legal-link" data-legal-open="privacidade">Política de Privacidade</button>.</span>
+              </label>
+              <div id="login-err"></div>
+              <button type="submit" class="btn btn-primary btn-block" id="btn-cadastrar">Criar conta ${ic.arrow}</button>
+            </form>
+
+            <p style="font-size:13px;color:var(--ink-soft);text-align:center;margin-top:22px">
+              Já tem conta? <button class="legal-link" id="ir-entrar">Entrar</button>
+            </p>
+            ` : `
             <h2>Entrar</h2>
             <div class="lead">Acesse a plataforma da sua farmácia.</div>
 
@@ -1540,16 +1723,21 @@
               <div class="input-wrap">${ic.mail}<input type="email" id="in-email" placeholder="voce@farmacia.com.br" autocomplete="email" required /></div>
               <label class="field">Senha</label>
               <div class="input-wrap">${ic.lock}<input type="password" id="in-senha" placeholder="••••••••" autocomplete="current-password" required /></div>
-              <div style="text-align:right;margin:8px 0 18px"><a href="#">Esqueci a senha</a></div>
+              <div style="text-align:right;margin:8px 0 18px"><button type="button" class="legal-link" id="btn-esqueci">Esqueci a senha</button></div>
               <div id="login-err"></div>
               <button type="submit" class="btn btn-primary btn-block" id="btn-entrar">Entrar ${ic.arrow}</button>
             </form>
 
             <p style="font-size:13px;color:var(--ink-soft);text-align:center;margin-top:22px">
-              Ainda não tem conta? <a href="#" style="font-weight:600">Assinar agora</a>
+              Ainda não tem conta? <button class="legal-link" id="ir-cadastrar" style="font-weight:600">Criar conta grátis</button>
             </p>
+            `}
 
             ${MODO_MOCK ? `<div class="demo-box"><strong>Modo demonstração</strong><br>e-mail: demo@docflow.ai · senha: demo</div>` : ""}
+            <div class="login-legal">Ao entrar, você concorda com os<br>
+              <button class="legal-link" data-legal-open="termos">Termos de Uso</button> e a
+              <button class="legal-link" data-legal-open="privacidade">Política de Privacidade</button>.
+            </div>
           </div>
         </main>
       </div>`;
@@ -1586,7 +1774,7 @@
       <button class="tab ${App.tela===tela?"active":""}" data-nav="${tela}">
         ${dot?'<span class="dot"></span>':""}${icon}<span class="lbl">${label}</span>
       </button>`;
-    const nAlertas = DB.listarAlertas(e.segmento || "farmacia").length;
+    const nAlertas = temRecurso("alertas_regulatorios") ? DB.listarAlertas(e.segmento || "farmacia").length : 0;
 
     return `
       <div class="app">
@@ -1614,7 +1802,7 @@
               </button>
             </div>
           </aside>
-          <div class="content">${inner}</div>
+          <div class="content">${faixaAssinatura()}${inner}</div>
         </div>
         <nav class="tabbar">
           ${tab("painel", ic.grid, "Painel")}
@@ -1639,12 +1827,89 @@
               <div class="rl">${escapeHtml(e.nome||"")} · ${PAPEL_LABEL[papelAtual()]||""}</div></div>
           </div>
           <button class="menu-item" id="menu-config">${ic.gear}<span>Configurações do estabelecimento</span>${ic.chev}</button>
+          <button class="menu-item" data-legal-open="termos">${ic.doc2}<span>Termos de Uso</span>${ic.chev}</button>
+          <button class="menu-item" data-legal-open="privacidade">${ic.shieldc}<span>Política de Privacidade</span>${ic.chev}</button>
           <button class="menu-item danger" id="menu-sair">${ic.logout}<span>Sair da conta</span></button>
         </div>
       </div>`;
   }
 
   // ---- Tela: Biblioteca ----
+  // ============================================================
+  //  ASSINATURA — período de teste e bloqueio
+  // ============================================================
+  // ============================================================
+  //  PLANOS — o que cada plano libera
+  // ============================================================
+  // Recursos exclusivos do Premium. O Essencial vê que existem,
+  // mas com convite para upgrade (mais honesto e converte melhor).
+  const RECURSOS_PREMIUM = ["alertas_regulatorios"];
+
+  function planoAtual(){
+    const e = Auth.estabelecimento || {};
+    return (e.plano || "essencial").toLowerCase();
+  }
+  function ehPremium(){ return planoAtual() === "premium"; }
+
+  // Retorna true se o plano atual libera o recurso.
+  function temRecurso(recurso){
+    if (!RECURSOS_PREMIUM.includes(recurso)) return true; // recurso do núcleo: todos têm
+    return ehPremium();
+  }
+
+  function statusAssinatura(){
+    const e = Auth.estabelecimento || {};
+    const st = e.status_assinatura || "trial";
+    if (st === "ativa") return { ativa:true, tipo:"ativa" };
+    const fim = e.trial_termina_em ? new Date(e.trial_termina_em) : null;
+    if (st === "trial" && fim){
+      const dias = Math.ceil((fim - new Date()) / 86400000);
+      if (dias > 0) return { ativa:true, tipo:"trial", dias };
+      return { ativa:false, tipo:"trial_expirado" };
+    }
+    if (st === "trial") return { ativa:true, tipo:"trial", dias:DIAS_TRIAL };
+    return { ativa:false, tipo:st };   // pendente | cancelada
+  }
+
+  function faixaAssinatura(){
+    const a = statusAssinatura();
+    if (a.tipo === "trial" && a.dias <= DIAS_TRIAL){
+      const urgente = a.dias <= 2;
+      return `<div class="trial-bar ${urgente?"urgente":""}">
+        ${ic.clock}
+        <span>${a.dias === 1 ? "Último dia" : `${a.dias} dias`} de teste grátis.</span>
+        <button class="trial-btn" data-nav="planos">Assinar</button>
+      </div>`;
+    }
+    return "";
+  }
+
+  function viewBloqueio(){
+    const a = statusAssinatura();
+    const titulo = a.tipo === "trial_expirado" ? "Seu período de teste terminou"
+      : a.tipo === "pendente" ? "Pagamento pendente" : "Assinatura cancelada";
+    const texto = a.tipo === "trial_expirado"
+      ? "Assine para continuar gerenciando seus POPs e registros de leitura. Seus dados estão salvos e voltam assim que a assinatura for confirmada."
+      : "Regularize a assinatura para voltar a usar a plataforma. Seus dados continuam guardados.";
+    return `
+      <div class="bloqueio">
+        <div class="bloqueio-card">
+          <div class="bloqueio-ic">${ic.lock}</div>
+          <h2>${titulo}</h2>
+          <p>${texto}</p>
+          <div class="bloqueio-planos">
+            <button class="btn btn-primary btn-block" data-assinar="essencial">Assinar Essencial — R$ 39,90/mês</button>
+            <button class="btn btn-block" data-assinar="premium">Assinar Premium — R$ 69,90/mês</button>
+          </div>
+          <p class="bloqueio-nota">Já pagou? A liberação pode levar alguns minutos. Se persistir, fale com o suporte.</p>
+          <div class="bloqueio-acoes">
+            ${CHECKOUT.suporte ? `<a class="legal-link" href="${CHECKOUT.suporte}" target="_blank" rel="noopener">Falar com o suporte</a>` : ""}
+            <button class="legal-link" id="bloq-sair">Sair da conta</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   // ============================================================
   //  PAINEL — cálculo de métricas de conformidade a partir do Store
   // ============================================================
@@ -1656,7 +1921,7 @@
     const vigentes = pops.filter(p => p.status === "vigente");
     const rascunhos = pops.filter(p => p.status === "rascunho");
     const revisar = pops.filter(p => p.status === "revisar" || p.alerta);
-    const alertas = DB.listarAlertas(e.segmento || "farmacia");
+    const alertas = temRecurso("alertas_regulatorios") ? DB.listarAlertas(e.segmento || "farmacia") : [];
 
     // Conformidade: soma de confirmações / (POPs vigentes × equipe)
     let confirmacoes = 0, esperado = 0, naoDistribuidos = 0;
@@ -1810,8 +2075,15 @@
               `${m.nRascunhos} rascunho · ${m.nRevisar} a revisar`,"")}
         ${kpi(ic.eye,"var(--amber-soft)","var(--amber-deep)","Leituras pendentes",m.pendentes,m.pendentes>0?"var(--amber)":"",
               m.atrasados>0?`${m.atrasados} ${m.atrasados===1?"pessoa atrasada":"pessoas atrasadas"}`:"Equipe em dia",m.atrasados>0?"dn":"up")}
-        ${kpi(ic.warn,"var(--red-soft)","var(--red)","Alertas",m.nAlertas,m.nAlertas>0?"var(--red)":"",
-              m.nAlertas>0?"Revise os POPs afetados":"Nenhum alerta aberto",m.nAlertas>0?"dn":"")}
+        ${ehPremium()
+          ? kpi(ic.warn,"var(--red-soft)","var(--red)","Alertas",m.nAlertas,m.nAlertas>0?"var(--red)":"",
+              m.nAlertas>0?"Revise os POPs afetados":"Nenhum alerta aberto",m.nAlertas>0?"dn":"")
+          : `<button class="kpi kpi-upsell" data-nav="planos">
+              <div class="kpi-top"><div class="kpi-ic" style="background:var(--brand-soft);color:var(--brand)">${ic.bell}</div>
+                <div class="kpi-l">Alertas regulatórios</div></div>
+              <div class="kpi-v" style="font-size:15px;color:var(--brand);line-height:1.3">Disponível no Premium</div>
+              <div class="kpi-d">Toque para conhecer →</div>
+            </button>`}
       </div>
 
       ${acoes.length ? `
@@ -2011,6 +2283,24 @@
   // ---- Tela: Alertas ----
   function viewAlertas(){
     const e = Auth.estabelecimento || {};
+    // Alertas regulatórios são exclusivos do Premium.
+    if (!temRecurso("alertas_regulatorios")){
+      return `
+        <div class="page-head"><div class="page-head-row"><div class="page-icon amber">${ic.bell}</div>
+          <div><div class="eyebrow">Recurso Premium</div>
+          <h1 style="margin:0">Alertas regulatórios</h1></div></div></div>
+        <div class="upsell">
+          <div class="upsell-ic">${ic.bell}</div>
+          <h2>Fique sabendo quando a norma muda</h2>
+          <p>No plano <strong>Premium</strong>, você recebe alertas quando uma RDC ou Portaria da ANVISA afeta seus POPs — e o app sinaliza automaticamente quais documentos revisar.</p>
+          <ul class="upsell-list">
+            <li>${ic.check} Alertas de mudanças em RDCs e Portarias</li>
+            <li>${ic.check} Sinalização automática de POPs a revisar</li>
+            <li>${ic.check} Curadoria por fontes oficiais</li>
+          </ul>
+          <button class="btn btn-primary" data-nav="planos" style="margin-top:4px">Conhecer o Premium</button>
+        </div>`;
+    }
     const alertas = DB.listarAlertas(e.segmento || "farmacia");
     const cards = alertas.map(a => `
       <div style="background:var(--panel);border:1px solid var(--line);border-left:3px solid ${a.grau==="alto"?"var(--red)":"var(--amber)"};border-radius:10px;padding:17px 19px;margin-bottom:12px">
@@ -2285,12 +2575,21 @@
     const e = Auth.estabelecimento || {};
     const base = (window.location && window.location.origin && window.location.origin !== "null")
       ? window.location.origin + window.location.pathname : "https://docflow.vercel.app";
-    return `${base}#/ler/${e.id}/${pop.id}`;
+    return `${base}#/ler/${pop.token_leitura || ""}`;
   }
 
   function viewDistribuir(){
     const p = DB.getPop(App.distribuirPop);
     if (!p) return `<button class="back-link" data-nav="biblioteca">← Biblioteca</button><p>POP não encontrado.</p>`;
+    // Sem token não há link seguro — acontece se a migração v2 ainda não foi aplicada.
+    if (!p.token_leitura){
+      return `
+        <button class="back-link" id="dist-voltar">← Voltar ao POP</button>
+        <div class="err" style="max-width:560px">
+          <strong>Link de leitura indisponível para este POP.</strong><br>
+          Rode o arquivo <code>migration_v2.sql</code> no Supabase para gerar os links seguros dos documentos já existentes. Depois, recarregue o app.
+        </div>`;
+    }
     const link = linkLeitura(p);
     return `
       <button class="back-link" id="dist-voltar">← Voltar ao POP</button>
@@ -2327,7 +2626,17 @@
   // ---- Visão do colaborador (tela cheia, sem barra de gestão) ----
   function viewColaborador(){
     const p = App.colabPop;
-    if (!p) return `<div style="padding:40px;text-align:center">POP não encontrado.</div>`;
+    // Link inválido, expirado ou de formato antigo
+    if (App.colabEtapa === "erro" || !p){
+      return `
+        <div class="colab-wrap">
+          <div class="colab-card" style="text-align:center;padding:40px 26px">
+            <div class="circle-ok" style="background:var(--amber-soft);color:var(--amber-deep)">${ic.warn}</div>
+            <h2 style="font-size:19px;font-weight:700;margin:14px 0 8px">Não foi possível abrir</h2>
+            <p style="font-size:14px;color:var(--ink-soft);line-height:1.6">${escapeHtml(App.colabErro||"Link inválido. Peça ao responsável técnico o link atualizado.")}</p>
+          </div>
+        </div>`;
+    }
     let corpo;
     if (App.colabEtapa === "feito"){
       const r = App.colabRegistro || {};
@@ -2373,6 +2682,147 @@
       </div>`;
   }
 
+  // ============================================================
+  //  DOCUMENTOS LEGAIS — Termos de Uso e Política de Privacidade
+  //  Versão controlada: ao mudar o texto, suba TERMOS_VERSAO para
+  //  exigir novo aceite dos usuários.
+  // ============================================================
+  const TERMOS_VERSAO = "1.0";
+  const EMPRESA = {
+    nome: "DocFlow AI",
+    responsavel: "[SEU NOME / RAZÃO SOCIAL]",
+    cnpj: "[SEU CNPJ]",
+    email: "[SEU E-MAIL DE CONTATO]",
+    cidade: "[SUA CIDADE/UF]",
+  };
+
+  function viewLegal(){
+    const doc = App.legalDoc === "privacidade" ? docPrivacidade() : docTermos();
+    return `
+      <button class="back-link" id="legal-voltar">← Voltar</button>
+      <div class="page-head"><div class="page-head-row"><div class="page-icon">${ic.shieldc}</div>
+        <div><div class="eyebrow">Versão ${TERMOS_VERSAO}</div>
+        <h1 style="margin:0">${App.legalDoc === "privacidade" ? "Política de Privacidade" : "Termos de Uso"}</h1></div></div></div>
+      <div class="legal-tabs">
+        <button class="tab-btn ${App.legalDoc!=="privacidade"?"active":""}" data-legal="termos">Termos de Uso</button>
+        <button class="tab-btn ${App.legalDoc==="privacidade"?"active":""}" data-legal="privacidade">Privacidade</button>
+      </div>
+      <div class="legal-card">${doc}</div>`;
+  }
+
+  const _h = (t) => `<h3 class="legal-h">${t}</h3>`;
+  const _p = (t) => `<p class="legal-p">${t}</p>`;
+  const _li = (arr) => `<ul class="legal-ul">${arr.map(i=>`<li>${i}</li>`).join("")}</ul>`;
+
+  function docTermos(){
+    return [
+      _p(`Estes Termos regulam o uso do <strong>${EMPRESA.nome}</strong>, plataforma de gestão de Procedimentos Operacionais Padrão (POPs) e registro de leitura para farmácias e drogarias, operada por ${EMPRESA.responsavel}, CNPJ ${EMPRESA.cnpj}.`),
+      _p(`Ao criar uma conta ou usar a plataforma, você declara que leu e concorda com estes Termos.`),
+
+      _h("1. O que a plataforma faz"),
+      _p("O DocFlow AI permite criar, versionar, distribuir e registrar a leitura de POPs pela equipe do estabelecimento. O registro de leitura guarda nome, CPF, cargo, data e hora da confirmação, com o objetivo de servir como evidência interna de treinamento e ciência dos procedimentos."),
+
+      _h("2. O que a plataforma NÃO faz"),
+      _li([
+        "<strong>Não substitui a responsabilidade técnica.</strong> O conteúdo dos POPs é de responsabilidade do Responsável Técnico (RT) do estabelecimento.",
+        "<strong>Não garante aprovação em fiscalização.</strong> A plataforma organiza documentos e evidências; a conformidade depende da prática real do estabelecimento.",
+        "<strong>Não presta consultoria jurídica ou regulatória.</strong> Os modelos e alertas são material de apoio e devem ser revisados e adaptados pelo RT antes do uso.",
+      ]),
+      _p("Os modelos oferecidos são elaborados com base em normas públicas vigentes na data de sua produção. Normas mudam. <strong>Cabe ao RT verificar a norma aplicável e validar cada documento antes de publicá-lo.</strong>"),
+
+      _h("3. Conta e responsabilidades do usuário"),
+      _li([
+        "Você é responsável pela veracidade dos dados informados e pelo sigilo da sua senha.",
+        "Você é responsável por cadastrar apenas pessoas que efetivamente compõem a equipe do estabelecimento e por ter base legal para tratar os dados delas (ver Política de Privacidade).",
+        "É proibido usar a plataforma para fins ilícitos, ou tentar acessar dados de outros estabelecimentos.",
+      ]),
+
+      _h("4. Planos, pagamento e cancelamento"),
+      _li([
+        "O acesso é oferecido por assinatura mensal, podendo haver taxa única de implantação, conforme os valores exibidos no momento da contratação.",
+        "O período de teste gratuito, quando oferecido, tem duração indicada no app e não exige pagamento.",
+        "A falta de pagamento suspende o acesso às funcionalidades, preservando os dados por prazo razoável antes da exclusão.",
+        "Você pode cancelar a qualquer momento; o cancelamento encerra as cobranças seguintes e não gera devolução proporcional do período já pago, salvo exigência legal.",
+        "Nos termos do art. 49 do Código de Defesa do Consumidor, contratações feitas fora do estabelecimento comercial podem ser desfeitas em até 7 dias corridos.",
+      ]),
+
+      _h("5. Seus dados e exportação"),
+      _p("Os documentos e registros pertencem a você. Enquanto a conta estiver ativa, é possível exportar os POPs em PDF. Em caso de encerramento, você pode solicitar seus dados pelo e-mail de contato antes da exclusão definitiva."),
+
+      _h("6. Disponibilidade"),
+      _p("Trabalhamos para manter o serviço disponível, mas ele pode passar por interrupções para manutenção ou por falhas de terceiros (hospedagem, provedor de autenticação). Não garantimos disponibilidade ininterrupta."),
+
+      _h("7. Limitação de responsabilidade"),
+      _p("Na máxima extensão permitida em lei, a responsabilidade total do DocFlow AI fica limitada ao valor pago pelo usuário nos 12 meses anteriores ao evento. Não respondemos por sanções aplicadas ao estabelecimento, perda de faturamento ou danos decorrentes de conteúdo de POP elaborado ou aprovado pelo usuário."),
+
+      _h("8. Alterações"),
+      _p("Estes Termos podem ser atualizados. Mudanças relevantes serão comunicadas no app e exigirão novo aceite."),
+
+      _h("9. Foro e contato"),
+      _p(`Aplica-se a lei brasileira, com foro na comarca de ${EMPRESA.cidade}. Dúvidas: ${EMPRESA.email}.`),
+      _p(`<em>Versão ${TERMOS_VERSAO}.</em>`),
+    ].join("");
+  }
+
+  function docPrivacidade(){
+    return [
+      _p(`Esta Política explica como o <strong>${EMPRESA.nome}</strong> trata dados pessoais, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018 — LGPD).`),
+
+      _h("1. Quem é quem"),
+      _li([
+        "<strong>Você (o estabelecimento) é o Controlador</strong> dos dados da sua equipe: é você quem decide cadastrá-los e para quê.",
+        `<strong>O ${EMPRESA.nome} é o Operador</strong>: tratamos esses dados seguindo suas instruções, para fazer a plataforma funcionar.`,
+        "Em relação aos seus próprios dados de cadastro (do titular da conta), atuamos como Controlador.",
+      ]),
+
+      _h("2. Dados que tratamos"),
+      _li([
+        "<strong>Do titular da conta:</strong> nome, e-mail, e dados do estabelecimento (nome, cidade, UF).",
+        "<strong>Da equipe cadastrada por você:</strong> nome, CPF, cargo, CRF (quando aplicável), e-mail e telefone, quando informados.",
+        "<strong>Dos registros de leitura:</strong> nome, CPF, cargo, data e hora da confirmação, e qual versão do POP foi lida.",
+        "<strong>Técnicos:</strong> dados de autenticação e logs necessários à segurança.",
+      ]),
+      _p("<strong>Por que o CPF?</strong> Ele identifica de forma inequívoca quem confirmou a leitura de cada procedimento — é o que dá valor probatório ao registro. Sem ele, a evidência perde força."),
+
+      _h("3. Base legal"),
+      _li([
+        "<strong>Execução de contrato</strong> (art. 7º, V) — para prestar o serviço contratado.",
+        "<strong>Cumprimento de obrigação regulatória</strong> (art. 7º, II) — o registro de treinamento e ciência de procedimentos atende exigências sanitárias aplicáveis a farmácias.",
+        "<strong>Legítimo interesse</strong> (art. 7º, IX) — para segurança da plataforma e prevenção a fraude.",
+      ]),
+      _p("<strong>Atenção:</strong> como Controlador, cabe a você informar sua equipe sobre esse tratamento. Recomendamos comunicar aos colaboradores que as leituras de POP são registradas com CPF, data e hora."),
+
+      _h("4. Compartilhamento"),
+      _p("Não vendemos dados. Compartilhamos apenas com fornecedores necessários à operação, que atuam como suboperadores:"),
+      _li([
+        "<strong>Supabase</strong> — banco de dados e autenticação.",
+        "<strong>Vercel</strong> — hospedagem da aplicação.",
+        "<strong>Google</strong> — apenas se você optar por entrar com conta Google.",
+        "<strong>Gateway de pagamento</strong> — para processar a assinatura. Não armazenamos dados de cartão.",
+      ]),
+      _p("Parte da infraestrutura pode estar fora do Brasil. Nesses casos, a transferência internacional observa o art. 33 da LGPD."),
+
+      _h("5. Segurança"),
+      _li([
+        "Isolamento por estabelecimento no banco de dados (RLS), de forma que uma farmácia não acessa dados de outra.",
+        "Os links de leitura usam token secreto: quem tem o link vê apenas aquele documento, e a validação de CPF ocorre no servidor — a lista de colaboradores nunca é exposta.",
+        "Comunicação criptografada (HTTPS).",
+      ]),
+      _p("Nenhum sistema é imune a incidentes. Em caso de incidente relevante, comunicaremos você e a ANPD nos termos do art. 48 da LGPD."),
+
+      _h("6. Retenção"),
+      _p("Os registros de leitura são mantidos enquanto a conta estiver ativa e por prazo compatível com a necessidade de comprovação em fiscalização. Após o encerramento, os dados podem ser mantidos por período legal e depois eliminados."),
+
+      _h("7. Direitos dos titulares"),
+      _p(`Titulares podem solicitar confirmação de tratamento, acesso, correção, anonimização, portabilidade ou eliminação, nos termos do art. 18 da LGPD. Pedidos de colaboradores devem ser dirigidos primeiro ao estabelecimento (Controlador). Nosso canal: ${EMPRESA.email}.`),
+      _p(`<em>Atenção: registros de leitura já usados como evidência de conformidade podem não ser elimináveis de imediato, por haver obrigação de guarda.</em>`),
+
+      _h("8. Contato do Encarregado (DPO)"),
+      _p(`${EMPRESA.email}`),
+      _p(`<em>Versão ${TERMOS_VERSAO}.</em>`),
+    ].join("");
+  }
+
   function viewPlanos(){
     const inclB = ["Biblioteca de POPs e modelos de farmácia","Editor com controle de versões e histórico","Registro de leitura da equipe (data e hora)","Distribuição por link e QR code","Assistente de redação com IA","Exportação em PDF"];
     const inclP = ["Tudo do plano Essencial","Alertas de mudanças em RDCs e Portarias","Sinalização automática de POPs a revisar","Curadoria por fontes oficiais da ANVISA"];
@@ -2391,7 +2841,7 @@
           <div style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em">Essencial</div>
           <div style="margin:10px 0 4px"><span style="font-family:var(--mono);font-size:34px;font-weight:700">R$ 39,90</span><span style="font-size:14px;color:var(--ink-soft)">/mês</span></div>
           <div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">+ R$ 47 de implantação</div>
-          <button class="btn btn-block" style="margin-bottom:20px">Assinar Essencial</button>
+          <button class="btn btn-block" data-assinar="essencial" style="margin-bottom:20px" ${planoAtual()==="essencial"?"disabled":""}>${planoAtual()==="essencial"?"✓ Seu plano atual":"Assinar Essencial"}</button>
           ${li(inclB,"c")}
         </div>
         <div style="background:var(--panel);border:2px solid var(--brand);border-radius:14px;padding:26px;position:relative">
@@ -2399,7 +2849,7 @@
           <div style="font-family:var(--mono);font-size:12px;color:var(--brand);text-transform:uppercase;letter-spacing:.08em">Premium · Regulatório</div>
           <div style="margin:10px 0 4px"><span style="font-family:var(--mono);font-size:34px;font-weight:700">R$ 69,90</span><span style="font-size:14px;color:var(--ink-soft)">/mês</span></div>
           <div style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">+ R$ 47 de implantação</div>
-          <button class="btn btn-primary btn-block" style="margin-bottom:20px">Assinar Premium</button>
+          <button class="btn btn-primary btn-block" data-assinar="premium" style="margin-bottom:20px" ${planoAtual()==="premium"?"disabled":""}>${planoAtual()==="premium"?"✓ Seu plano atual":"Assinar Premium"}</button>
           ${li(inclP,"s")}
         </div>
       </div>`;
@@ -2417,15 +2867,42 @@
       ligarColaborador();
       return;
     }
+    // Documentos legais são públicos: acessíveis antes de entrar.
+    if (!Auth.perfil && App.tela === "legal"){
+      root.innerHTML = `<div class="legal-publico">${viewLegal()}</div>`;
+      document.querySelectorAll("[data-legal]").forEach(el => {
+        el.onclick = () => { App.legalDoc = el.getAttribute("data-legal"); render(); };
+      });
+      const v = document.getElementById("legal-voltar");
+      if (v) v.onclick = () => { App.tela = "login"; render(); };
+      return;
+    }
     if (!Auth.perfil){
       root.innerHTML = viewLogin();
       ligarLogin();
       return;
     }
+    // Assinatura vencida: bloqueia o app, liberando só planos e documentos legais.
+    const _assin = statusAssinatura();
+    if (!_assin.ativa && App.tela !== "legal"){
+      root.innerHTML = viewBloqueio();
+      document.querySelectorAll("[data-assinar]").forEach(el => {
+        el.onclick = () => {
+          const url = CHECKOUT[el.getAttribute("data-assinar")];
+          if (!url){ alert("Link de pagamento ainda não configurado (CHECKOUT no topo do index.html)."); return; }
+          window.open(url, "_blank", "noopener");
+        };
+      });
+      const bs = document.getElementById("bloq-sair");
+      if (bs) bs.onclick = () => Auth.sair();
+      return;
+    }
+
     // App logado: escolhe a tela interna
     let inner;
     if (App.tela === "pop") inner = viewPop();
     else if (App.tela === "painel") inner = viewPainel();
+    else if (App.tela === "legal") inner = viewLegal();
     else if (App.tela === "novopop") inner = viewNovoPop();
     else if (App.tela === "distribuir") inner = viewDistribuir();
     else if (App.tela === "alertas") inner = viewAlertas();
@@ -2467,6 +2944,46 @@
     if (btnContaSide) btnContaSide.onclick = abrirConta;
     const contaBg = document.getElementById("conta-bg");
     if (contaBg) contaBg.onclick = (ev) => { if (ev.target === contaBg){ App.contaAberta = false; render(); } };
+    // Assinatura — leva ao checkout configurado em CHECKOUT
+    document.querySelectorAll("[data-assinar]").forEach(el => {
+      el.onclick = () => {
+        const plano = el.getAttribute("data-assinar");
+        const url = CHECKOUT[plano];
+        if (!url){
+          alert("O link de pagamento ainda não foi configurado.\n\nPreencha CHECKOUT.essencial e CHECKOUT.premium no topo do arquivo index.html com os links do seu gateway (Hotmart, Kiwify, Asaas...).");
+          return;
+        }
+        const e = Auth.estabelecimento || {};
+        const p = Auth.perfil || {};
+        // Passa e-mail e id do estabelecimento para o gateway conseguir
+        // identificar a conta no retorno (webhook).
+        const sep = url.includes("?") ? "&" : "?";
+        const params = `email=${encodeURIComponent(p.email||"")}&ref=${encodeURIComponent(e.id||"")}`;
+        window.open(url + sep + params, "_blank", "noopener");
+      };
+    });
+
+    // Documentos legais (abrem de qualquer lugar: login ou menu da conta)
+    document.querySelectorAll("[data-legal-open]").forEach(el => {
+      el.onclick = (ev) => {
+        ev.preventDefault();
+        App.legalDoc = el.getAttribute("data-legal-open");
+        if (App.tela !== "legal") App.telaAnterior = App.tela;
+        App.contaAberta = false;
+        App.tela = "legal";
+        render();
+      };
+    });
+    document.querySelectorAll("[data-legal]").forEach(el => {
+      el.onclick = () => { App.legalDoc = el.getAttribute("data-legal"); render(); };
+    });
+    const legalVoltar = document.getElementById("legal-voltar");
+    if (legalVoltar) legalVoltar.onclick = () => {
+      App.tela = App.telaAnterior || (Auth.perfil ? "painel" : "login");
+      App.telaAnterior = null;
+      render();
+    };
+
     const menuSair = document.getElementById("menu-sair");
     if (menuSair) menuSair.onclick = () => { App.tela="biblioteca"; App.popId=null; App._leu=false; App.configAberta=false; App.contaAberta=false; Auth.sair(); };
     const menuConfig = document.getElementById("menu-config");
@@ -2772,11 +3289,74 @@
   }
 
   function ligarLogin(){
+    // Termos e Privacidade acessíveis antes mesmo de entrar
+    document.querySelectorAll("[data-legal-open]").forEach(el => {
+      el.onclick = (ev) => {
+        ev.preventDefault();
+        App.legalDoc = el.getAttribute("data-legal-open");
+        App.telaAnterior = "login";
+        App.tela = "legal";
+        render();
+      };
+    });
+    // Alternar entre entrar e criar conta
+    const irCad = document.getElementById("ir-cadastrar");
+    if (irCad) irCad.onclick = () => { App.authModo = "cadastrar"; render(); };
+    const irEnt = document.getElementById("ir-entrar");
+    if (irEnt) irEnt.onclick = () => { App.authModo = "entrar"; render(); };
+
+    // Recuperar senha
+    const btnEsq = document.getElementById("btn-esqueci");
+    if (btnEsq) btnEsq.onclick = async () => {
+      const box = document.getElementById("login-err");
+      const email = (document.getElementById("in-email").value||"").trim();
+      if (!email){ box.innerHTML = `<div class="err">Digite seu e-mail no campo acima e clique em "Esqueci a senha".</div>`; return; }
+      btnEsq.disabled = true;
+      const r = await Auth.recuperarSenha(email);
+      btnEsq.disabled = false;
+      box.innerHTML = r.erro
+        ? `<div class="err">${escapeHtml(r.erro)}</div>`
+        : `<div class="ok-box">Enviamos um link de redefinição para <strong>${escapeHtml(email)}</strong>. Verifique sua caixa de entrada.</div>`;
+    };
+
+    // Formulário de cadastro
+    const formCad = document.getElementById("form-cadastro");
+    if (formCad) formCad.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const box = document.getElementById("login-err");
+      box.innerHTML = "";
+      const nome  = (document.getElementById("cad-nome").value||"").trim();
+      const estab = (document.getElementById("cad-estab").value||"").trim();
+      const email = (document.getElementById("cad-email").value||"").trim();
+      const senha = document.getElementById("cad-senha").value||"";
+      const aceite = document.getElementById("cad-aceite").checked;
+      if (!nome){ box.innerHTML = `<div class="err">Informe seu nome.</div>`; return; }
+      if (senha.length < 8){ box.innerHTML = `<div class="err">A senha precisa ter pelo menos 8 caracteres.</div>`; return; }
+      if (!aceite){ box.innerHTML = `<div class="err">É necessário aceitar os Termos de Uso e a Política de Privacidade para criar a conta.</div>`; return; }
+      const btn = document.getElementById("btn-cadastrar");
+      btn.disabled = true; btn.textContent = "Criando conta…";
+      const r = await Auth.cadastrar({ nome, estab, email, senha });
+      btn.disabled = false;
+      if (r.erro){
+        box.innerHTML = `<div class="err">${escapeHtml(r.erro)}</div>`;
+        btn.innerHTML = "Criar conta";
+        return;
+      }
+      if (r.confirmar){
+        box.innerHTML = `<div class="ok-box"><strong>Quase lá!</strong> Enviamos um e-mail de confirmação para <strong>${escapeHtml(email)}</strong>. Clique no link para ativar sua conta e depois faça login.</div>`;
+        btn.innerHTML = "Criar conta";
+        return;
+      }
+      App.authModo = "entrar";
+      render();
+    };
+
     const form = document.getElementById("form-login");
     const btnEntrar = document.getElementById("btn-entrar");
     const btnGoogle = document.getElementById("btn-google");
     const errBox = document.getElementById("login-err");
 
+    if (!form) return;
     form.onsubmit = async (ev) => {
       ev.preventDefault();
       errBox.innerHTML = "";
@@ -2826,20 +3406,35 @@
     const btnConfirmar = document.getElementById("colab-confirmar");
     if (btnConfirmar) btnConfirmar.onclick = async () => {
       const cpf = App.colabCpf;
-      const e = Auth.estabelecimento || {};
       if (!cpfValido(cpf)){ App.colabErro = "CPF inválido. Verifique os números."; render(); return; }
-      const colab = DB.buscarColaboradorPorCpf(e.id, cpf);
-      if (!colab){ App.colabErro = "CPF não encontrado. Confirme com o responsável técnico se você está cadastrado."; render(); return; }
       const p = App.colabPop;
       btnConfirmar.disabled = true;
       App.colabErro = null;
       try {
-        const reg = await DB.confirmarLeitura(p.id, p.versao_atual, colab);
-        App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
+        if (MODO_MOCK){
+          const colab = DB.buscarColaboradorPorCpf((Auth.estabelecimento||{}).id, cpf);
+          if (!colab){ App.colabErro = "CPF não encontrado. Confirme com o responsável técnico se você está cadastrado."; render(); return; }
+          const reg = await DB.confirmarLeitura(p.id, p.versao_atual, colab);
+          App.colabRegistro = reg || { leitor_nome: colab.nome, confirmado_em: new Date().toISOString() };
+          App.colabEtapa = "feito"; render(); return;
+        }
+        // Modo real: o CPF é conferido DENTRO do banco. O app nunca recebe
+        // a lista de colaboradores nem CPFs de terceiros.
+        const { data, error } = await sb.rpc("confirmar_leitura_publica", {
+          p_token: App.colabToken, p_cpf: cpf
+        });
+        if (error) throw new Error(error.message);
+        if (!data || !data.ok){
+          const motivo = data && data.erro;
+          App.colabErro = motivo === "cpf_nao_encontrado"
+            ? "CPF não encontrado nesta farmácia. Confirme com o responsável técnico se você está cadastrado."
+            : "Link inválido ou expirado. Peça um link novo ao responsável técnico.";
+          render(); return;
+        }
+        App.colabRegistro = { leitor_nome: data.nome, confirmado_em: data.confirmado_em };
         App.colabEtapa = "feito";
         render();
       } catch(err){
-        // Não mostra falso sucesso: se o banco recusou, avisa e deixa tentar de novo.
         App.colabErro = "Não foi possível registrar sua leitura agora: " + (err && err.message ? err.message : "erro de conexão") + " Tente novamente ou avise o responsável.";
         render();
       }
@@ -2899,10 +3494,15 @@
   }
 
   // Detecta se a URL é um link de leitura: #/ler/{estabId}/{popId}
+  // Formato novo (seguro): #/ler/{token}
+  // Formato antigo (#/ler/{estab}/{pop}) não é mais aceito — ver AVISO no README.
   function rotaLeitura(){
     const h = (window.location.hash || "");
-    const m = h.match(/#\/ler\/([^/]+)\/([^/]+)/);
-    return m ? { estabId: m[1], popId: m[2] } : null;
+    const m = h.match(/#\/ler\/([A-Za-z0-9._-]+)\/?$/);
+    if (m) return { token: m[1] };
+    // link antigo: identifica para avisar o usuário em vez de falhar em silêncio
+    if (/#\/ler\//.test(h)) return { token: null, antigo: true };
+    return null;
   }
 
   // Inicialização.
@@ -2916,23 +3516,30 @@
       // Link de leitura do colaborador (abre direto na visão pública).
       const rota = rotaLeitura();
       if (rota){
-        if (MODO_MOCK){
+        App.tela = "colaborador";
+        if (rota.antigo){
+          App.colabEtapa = "erro";
+          App.colabErro = "Este link é de uma versão antiga e não vale mais. Peça ao responsável técnico o link atualizado do procedimento.";
+        } else if (MODO_MOCK){
           carregarDoMock();
-          Auth.estabelecimento = MOCK.estabelecimentos.find(e => e.id === rota.estabId) || MOCK.estabelecimentos[0];
+          const pop = Store.pops.find(p => p.token_leitura === rota.token) || Store.pops[0];
+          Auth.estabelecimento = MOCK.estabelecimentos[0];
+          if (pop){ App.colabPop = pop; App.colabToken = rota.token; App.colabEtapa = "ler"; }
+          else { App.colabEtapa = "erro"; App.colabErro = "Procedimento não encontrado."; }
         } else {
-          // carrega o estabelecimento e o POP público (leitura liberada por RLS).
-          const { data:e } = await sb.from("estabelecimentos").select("*").eq("id", rota.estabId).maybeSingle();
-          if (e){
-            Auth.estabelecimento = e;
-            const { data:pops } = await sb.from("pops").select("*").eq("estabelecimento_id", rota.estabId);
-            const { data:colabs } = await sb.from("colaboradores").select("*").eq("estabelecimento_id", rota.estabId);
-            Store.pops = (pops||[]).map(mapPop);
-            Store.colaboradores = (colabs||[]).map(mapColab);
+          // Busca só o documento, pelo token. O banco não devolve colaboradores nem CPFs.
+          const { data, error } = await sb.rpc("pop_publico", { p_token: rota.token });
+          const linha = Array.isArray(data) ? data[0] : data;
+          if (error || !linha){
+            App.colabEtapa = "erro";
+            App.colabErro = "Link inválido ou expirado. Peça ao responsável técnico um link novo.";
+          } else {
+            Auth.estabelecimento = { nome: linha.estab_nome, cidade: linha.estab_cidade, uf: linha.estab_uf };
+            App.colabPop = { id: linha.pop_id, nome: linha.nome, categoria: linha.categoria,
+              versao_atual: linha.versao_atual, conteudo: linha.conteudo, status: linha.status };
+            App.colabToken = rota.token;
+            App.colabEtapa = "ler";
           }
-        }
-        const pop = DB.getPop(rota.popId);
-        if (pop){
-          App.colabPop = pop; App.colabEtapa = "ler"; App.tela = "colaborador";
         }
       }
     } catch (e) {
