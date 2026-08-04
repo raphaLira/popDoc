@@ -937,6 +937,42 @@
       cursor:pointer;text-align:left;font-family:var(--sans);transition:border-color .16s}
     .kpi-upsell:hover{border-color:var(--brand)!important}
     @media (max-width:600px){ .upsell{padding:28px 20px} }
+
+    /* ============================================================
+       PADRÃO SNVS — cabeçalho controlado e folha de aprovação
+    ============================================================ */
+    .pop-head{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:12px;line-height:1.4}
+    .pop-head td{border:1px solid #9A96A3;padding:6px 9px;vertical-align:middle}
+    .pop-head .ph-logo{width:64px;text-align:center;color:var(--brand)}
+    .pop-head .ph-logo svg{width:30px;height:30px}
+    .pop-head .ph-org{text-align:center;font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em}
+    .pop-head .ph-tipo{text-align:center;font-size:11.5px;font-weight:600}
+    .pop-head .ph-c{font-size:11px;width:25%}
+    .pop-head .ph-c b{font-weight:600}
+    .pop-head .ph-tit{font-size:12px}
+
+    .folha-aprov{margin-top:32px;padding-top:24px;border-top:2px solid var(--line)}
+    .fa-titulo{text-align:center;font-size:14px;font-weight:800;letter-spacing:.04em;margin-bottom:20px}
+    .fa-bloco{margin-bottom:16px}
+    .fa-rot{font-size:12.5px;font-weight:700;margin-bottom:6px}
+    .fa-tab{width:100%;border-collapse:collapse;font-size:12.5px}
+    .fa-tab td{border:1px solid #9A96A3;padding:6px 10px}
+    .fa-tab .fa-k{width:120px;font-weight:600;background:var(--panel-2)}
+    .fa-nota{font-size:12px;color:var(--ink-soft);margin-top:14px;line-height:1.6}
+    .fa-nota.fa-pend{background:var(--amber-soft);color:var(--amber-deep);padding:11px 13px;border-radius:var(--r1)}
+
+    .form-sec-guia{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.5}
+
+    /* Impressão / PDF: mantém as tabelas legíveis e evita quebra feia */
+    @media print{
+      .pop-head, .fa-tab{page-break-inside:avoid}
+      .pop-head td, .fa-tab td{border:1px solid #000}
+      .folha-aprov{page-break-before:always}
+      .fa-nota.fa-pend{display:none}
+    }
+
+    .fa-edit-bloco{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r2);padding:14px;margin-bottom:10px}
+    .fa-edit-bloco .fa-rot{margin-bottom:10px}
   </style>
 </head>
 <body>
@@ -1196,7 +1232,12 @@
   const mapPop = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
     categoria:r.categoria, status:r.status, origem:r.origem, versao_atual:r.versao_atual,
     leitura_obrigatoria:r.leitura_obrigatoria, conteudo:r.conteudo||"",
-    token_leitura:r.token_leitura||"", atualizado_em:(r.atualizado_em||"").slice(0,10) });
+    token_leitura:r.token_leitura||"", atualizado_em:(r.atualizado_em||"").slice(0,10),
+    codigo_area:r.codigo_area||"", data_efetividade:r.data_efetividade||null, referencias:r.referencias||"",
+    elaborador_nome:r.elaborador_nome||"", elaborador_cargo:r.elaborador_cargo||"",
+    revisor_tecnico_nome:r.revisor_tecnico_nome||"", revisor_tecnico_cargo:r.revisor_tecnico_cargo||"",
+    revisor_qual_nome:r.revisor_qual_nome||"", revisor_qual_cargo:r.revisor_qual_cargo||"",
+    aprovador_nome:r.aprovador_nome||"", aprovador_cargo:r.aprovador_cargo||"", aprovado_em:r.aprovado_em||null });
   const mapColab = (r) => ({ id:r.id, estabelecimento_id:r.estabelecimento_id, nome:r.nome,
     cpf:r.cpf, cargo:r.cargo, papel:r.papel, crf:r.crf, email:r.email, telefone:r.telefone,
     admissao:(r.admissao||"").slice(0,10), ativo:r.ativo });
@@ -1294,7 +1335,7 @@
       return pop;
     },
 
-    async salvarNovaVersao(popId, conteudo, nota){
+    async salvarNovaVersao(popId, conteudo, nota, meta){
       const pop = Store.pops.find(p => p.id === popId);
       if (!pop) return null;
       const e = Auth.estabelecimento || {};
@@ -1306,11 +1347,12 @@
       if (!MODO_MOCK){
         await sb.from("versoes_pop").update({ vigente:false }).eq("pop_id", popId).eq("estabelecimento_id", e.id);
         await sb.from("versoes_pop").insert({ ...versao, estabelecimento_id:e.id });
-        await sb.from("pops").update({ conteudo, versao_atual:nova, status:novoStatus, atualizado_em:agora })
+        await sb.from("pops").update({ conteudo, versao_atual:nova, status:novoStatus, atualizado_em:agora, ...(meta||{}) })
           .eq("id", popId).eq("estabelecimento_id", e.id);
       }
       Store.versoes.filter(v => v.pop_id === popId).forEach(v => v.vigente = false);
       Store.versoes.push(versao);
+      Object.assign(pop, meta||{});
       pop.conteudo = conteudo; pop.versao_atual = nova; pop.status = novoStatus;
       pop.atualizado_em = agora.slice(0,10);
       return pop;
@@ -1321,9 +1363,21 @@
       if (!pop) return null;
       const e = Auth.estabelecimento || {};
       const agora = new Date().toISOString();
-      if (!MODO_MOCK){
-        await sb.from("pops").update({ status, atualizado_em:agora }).eq("id", popId).eq("estabelecimento_id", e.id);
+      // Ao publicar, registra a aprovação e, se faltar, define a efetividade de hoje
+      // (padrão SNVS: o documento só vale a partir da data de efetividade).
+      const extra = {};
+      if (status === "vigente"){
+        extra.aprovado_em = agora;
+        if (!pop.data_efetividade) extra.data_efetividade = agora.slice(0,10);
+        if (!pop.aprovador_nome && Auth.perfil){
+          extra.aprovador_nome = Auth.perfil.nome || "";
+          extra.aprovador_cargo = PAPEL_LABEL[papelAtual()] || "";
+        }
       }
+      if (!MODO_MOCK){
+        await sb.from("pops").update({ status, atualizado_em:agora, ...extra }).eq("id", popId).eq("estabelecimento_id", e.id);
+      }
+      Object.assign(pop, extra);
       pop.status = status; pop.atualizado_em = agora.slice(0,10);
       return pop;
     },
@@ -1422,6 +1476,102 @@
   }
 
   // Render simples do conteúdo: "## Título" vira seção, resto vira parágrafo.
+  // ============================================================
+  //  ESTRUTURA PADRÃO DE POP — POP-SNVS/S-001 v.02 (ANVISA)
+  //  As 13 seções exigidas, com a orientação de conteúdo de cada
+  //  uma conforme o item 9 do procedimento do SNVS.
+  // ============================================================
+  const ESTRUTURA_SNVS = [
+    { nome:"Introdução",
+      guia:"Descreva a importância do procedimento para as atividades desempenhadas pelo núcleo de trabalho.",
+      desc:"" },
+    { nome:"Objetivo",
+      guia:"Descreva de maneira clara e sucinta o que se pretende padronizar com o uso do documento.",
+      desc:"" },
+    { nome:"Abrangência",
+      guia:"Descreva as áreas e pessoas que deverão observar e seguir as diretrizes do POP.",
+      desc:"" },
+    { nome:"Referências",
+      guia:"Liste os documentos consultados. Para normas: tipo, número, título e data de publicação.",
+      desc:"" },
+    { nome:"Definições",
+      guia:"Defina os termos não comuns ou que necessitam de padronização no contexto do POP.",
+      desc:"" },
+    { nome:"Siglas e abreviaturas",
+      guia:"Descreva o significado das siglas e abreviaturas citadas no documento.",
+      desc:"" },
+    { nome:"Responsabilidades",
+      guia:"Estabeleça os responsáveis pela execução das ações previstas, discriminando cargos.",
+      desc:"" },
+    { nome:"Itens de controle",
+      guia:"Indicador de monitoramento da atividade-fim, formas de coleta, cálculo e metas. Se não houver, escreva: Não aplicáveis a este POP.",
+      desc:"" },
+    { nome:"Principais passos",
+      guia:"Descreva detalhadamente o procedimento. Use verbos no imperativo. Direto, simples e completo.",
+      desc:"" },
+    { nome:"Recursos necessários",
+      guia:"Recursos humanos e materiais necessários para a execução do procedimento.",
+      desc:"" },
+    { nome:"Ações em caso de desvios",
+      guia:"Desvios potenciais previstos e as ações corretivas a adotar caso ocorram.",
+      desc:"" },
+    { nome:"Anexos",
+      guia:"Enumere e nomeie os anexos (formulários, planilhas de registro). Se não houver, escreva: Não há.",
+      desc:"" },
+    { nome:"Histórico",
+      guia:"Mudanças de uma versão para a seguinte, permitindo rastreabilidade. A versão 00/01 é a emissão inicial.",
+      desc:"" },
+  ];
+
+  // ---- Cabeçalho controlado (padrão POP-SNVS/S-001) ----
+  // Tabela fixa no topo do documento: órgão, tipo, código, versão,
+  // página, data de efetividade e título.
+  function cabecalhoSNVS(p){
+    const e = Auth.estabelecimento || {};
+    const efet = p.data_efetividade
+      ? new Date(p.data_efetividade + "T00:00:00").toLocaleDateString("pt-BR")
+      : "—";
+    return `
+      <table class="pop-head">
+        <tr>
+          <td class="ph-logo" rowspan="3">${ic.logo}</td>
+          <td class="ph-org" colspan="4">${escapeHtml(e.nome||"Estabelecimento")}${e.cidade?" — "+escapeHtml(e.cidade):""}${e.uf?"/"+escapeHtml(e.uf):""}</td>
+        </tr>
+        <tr><td class="ph-tipo" colspan="4">PROCEDIMENTO OPERACIONAL PADRÃO (POP)</td></tr>
+        <tr>
+          <td class="ph-c"><b>Código:</b><br>${escapeHtml(p.id)}</td>
+          <td class="ph-c"><b>Versão:</b><br>${String(p.versao_atual).padStart(2,"0")}</td>
+          <td class="ph-c"><b>Página:</b><br>1/1</td>
+          <td class="ph-c"><b>Data de efetividade:</b><br>${efet}</td>
+        </tr>
+        <tr><td class="ph-tit" colspan="5"><b>Título:</b> ${escapeHtml(p.nome)}</td></tr>
+      </table>`;
+  }
+
+  // ---- Folha de aprovação (padrão POP-SNVS/S-001) ----
+  function folhaAprovacao(p){
+    const campo = (rotulo, nome, cargo) => `
+      <div class="fa-bloco">
+        <div class="fa-rot">${rotulo}</div>
+        <table class="fa-tab">
+          <tr><td class="fa-k">Nome</td><td class="fa-v">${escapeHtml(nome||"—")}</td></tr>
+          <tr><td class="fa-k">Cargo</td><td class="fa-v">${escapeHtml(cargo||"—")}</td></tr>
+        </table>
+      </div>`;
+    const temAlgo = p.elaborador_nome || p.revisor_tecnico_nome || p.revisor_qual_nome || p.aprovador_nome;
+    return `
+      <div class="folha-aprov">
+        <div class="fa-titulo">FOLHA DE APROVAÇÃO</div>
+        ${campo("Elaborador:", p.elaborador_nome, p.elaborador_cargo)}
+        ${campo("Revisor técnico:", p.revisor_tecnico_nome, p.revisor_tecnico_cargo)}
+        ${campo("Revisor da qualidade:", p.revisor_qual_nome, p.revisor_qual_cargo)}
+        ${campo("Aprovador:", p.aprovador_nome, p.aprovador_cargo)}
+        ${p.aprovado_em
+          ? `<div class="fa-nota">Aprovado em ${new Date(p.aprovado_em).toLocaleDateString("pt-BR")}. A confirmação de leitura da equipe é registrada com nome, CPF, data e hora.</div>`
+          : (temAlgo ? "" : `<div class="fa-nota fa-pend">Preencha os responsáveis em <b>Editar → Folha de aprovação</b>.</div>`)}
+      </div>`;
+  }
+
   function renderConteudo(texto){
     const linhas = String(texto||"").split("\n");
     let html = "", buffer = [];
@@ -2191,8 +2341,36 @@
       corpo = `
         <div class="editor-hint">${ic.edit} Use <strong>## Título</strong> para começar uma seção. Cada save gera uma nova versão.</div>
         <textarea id="pop-editor" class="pop-editor" spellcheck="true">${escapeHtml(App.rascunhoConteudo)}</textarea>
-        <div class="fld" style="margin-top:12px"><label>Nota da alteração (opcional)</label>
-          <input id="pop-nota" placeholder="Ex: revisão de redação da seção 2"></div>
+
+        <div class="sec-label">Cabeçalho do documento</div>
+        <div class="form-grid">
+          <div class="fld"><label>Data de efetividade</label>
+            <input type="date" id="ed-efet" value="${escapeHtml(p.data_efetividade||"")}">
+            <div class="hint">Data em que o POP passa a valer.</div></div>
+          <div class="fld"><label>Categoria</label>
+            <input id="ed-cat" value="${escapeHtml(p.categoria||"")}"></div>
+        </div>
+
+        <div class="sec-label">Folha de aprovação</div>
+        <div class="fa-edit">
+          ${[
+            ["Elaborador","ed-elab","elaborador_nome","elaborador_cargo"],
+            ["Revisor técnico","ed-revt","revisor_tecnico_nome","revisor_tecnico_cargo"],
+            ["Revisor da qualidade","ed-revq","revisor_qual_nome","revisor_qual_cargo"],
+            ["Aprovador","ed-aprov","aprovador_nome","aprovador_cargo"],
+          ].map(([rot,id,kn,kc]) => `
+            <div class="fa-edit-bloco">
+              <div class="fa-rot">${rot}</div>
+              <div class="form-grid">
+                <div class="fld"><label>Nome</label><input id="${id}-n" value="${escapeHtml(p[kn]||"")}" placeholder="Nome completo"></div>
+                <div class="fld"><label>Cargo</label><input id="${id}-c" value="${escapeHtml(p[kc]||"")}" placeholder="Ex: Farmacêutico RT"></div>
+              </div>
+            </div>`).join("")}
+          <div class="hint" style="margin-top:2px">O revisor técnico não deve ser o elaborador nem o aprovador (padrão SNVS).</div>
+        </div>
+
+        <div class="fld" style="margin-top:16px"><label>Nota da alteração (item 13 — Histórico)</label>
+          <input id="pop-nota" placeholder="Ex: revisão da seção 9 — Principais passos"></div>
         <div class="doc-actions">
           <button class="btn btn-primary" id="btn-salvar-versao">${ic.check} Salvar nova versão</button>
           <button class="btn" id="btn-cancelar-edicao">Cancelar</button>
@@ -2208,7 +2386,7 @@
       acoes.push(`<button class="btn" id="btn-distribuir">${ic.share} Distribuir</button>`);
       acoes.push(`<button class="btn" id="btn-pdf">${ic.download} PDF</button>`);
       corpo = `
-        <div class="doc-card">${renderConteudo(p.conteudo)}</div>
+        <div class="doc-card">${cabecalhoSNVS(p)}${renderConteudo(p.conteudo)}${folhaAprovacao(p)}</div>
         <div class="doc-actions">${acoes.join("")}</div>`;
     }
 
@@ -2501,7 +2679,8 @@
             <input class="form-sec-nome" data-sec-nome="${i}" value="${escapeHtml(s.nome||"")}" placeholder="Nome da seção (ex: Objetivo)">
             <button class="icon-btn form-sec-del" data-sec-del="${i}" title="Remover seção" ${secs.length<=1?"disabled":""}>${ic.x}</button>
           </div>
-          <textarea class="form-sec-desc" data-sec-desc="${i}" placeholder="Descreva esta seção...">${escapeHtml(s.desc||"")}</textarea>
+          <textarea class="form-sec-desc" data-sec-desc="${i}" placeholder="${escapeHtml(s.guia||"Descreva esta seção...")}">${escapeHtml(s.desc||"")}</textarea>
+          ${s.guia?`<div class="form-sec-guia">${escapeHtml(s.guia)}</div>`:""}
         </div>`;
       return `
         <button class="back-link" id="novo-voltar">← Voltar</button>
@@ -3063,13 +3242,10 @@
         const modo = el.getAttribute("data-modo");
         App.novoPop = { modo }; App.novoErro = null;
         if (modo === "formulario" && !App.novoForm){
-          // Seções padrão sugeridas para um POP de farmácia (a pessoa edita/remove).
-          App.novoForm = { titulo:"", categoria:"Geral", secoes:[
-            { nome:"Objetivo", desc:"Descreva o propósito deste procedimento." },
-            { nome:"Responsabilidades", desc:"Quem executa e quem supervisiona cada etapa." },
-            { nome:"Procedimento", desc:"Passo a passo de como o procedimento deve ser realizado." },
-            { nome:"Registros", desc:"Quais registros são gerados e por quanto tempo são guardados." },
-          ]};
+          // Estrutura obrigatória do padrão SNVS (POP-SNVS/S-001).
+          // A pessoa preenche cada seção; o guia aparece como dica no campo.
+          App.novoForm = { titulo:"", categoria:"Geral",
+            secoes: ESTRUTURA_SNVS.map(s => ({ nome:s.nome, desc:s.desc, guia:s.guia })) };
         }
         render();
       };
@@ -3162,9 +3338,20 @@
 
     const btnSalvarV = document.getElementById("btn-salvar-versao");
     if (btnSalvarV) btnSalvarV.onclick = async () => {
-      const nota = (document.getElementById("pop-nota").value||"").trim();
+      const val = (id) => { const el=document.getElementById(id); return el ? (el.value||"").trim() : undefined; };
+      const nota = val("pop-nota") || "";
+      const meta = {
+        data_efetividade: val("ed-efet") || null,
+        categoria: val("ed-cat"),
+        elaborador_nome: val("ed-elab-n"), elaborador_cargo: val("ed-elab-c"),
+        revisor_tecnico_nome: val("ed-revt-n"), revisor_tecnico_cargo: val("ed-revt-c"),
+        revisor_qual_nome: val("ed-revq-n"), revisor_qual_cargo: val("ed-revq-c"),
+        aprovador_nome: val("ed-aprov-n"), aprovador_cargo: val("ed-aprov-c"),
+      };
+      // remove chaves indefinidas (campos ausentes na tela)
+      Object.keys(meta).forEach(k => meta[k] === undefined && delete meta[k]);
       btnSalvarV.disabled = true;
-      await DB.salvarNovaVersao(App.popId, App.rascunhoConteudo, nota);
+      await DB.salvarNovaVersao(App.popId, App.rascunhoConteudo, nota, meta);
       App.editando = false; App._leu = false;
       render();
     };
